@@ -7,17 +7,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.tensorflow.lite.Interpreter;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.Socket;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.HashMap;
@@ -69,16 +63,10 @@ public class MainActivity extends AppCompatActivity {
                         Float.valueOf(temperature.getText().toString()),
                         Float.valueOf(pType.getText().toString())
                 );
-                secondsDelay.setText(Float.toString(prediction));
-
-//                sendToPythonServer();
+                String text = prediction + "";
+                secondsDelay.setText(text);
             }
         });
-    }
-
-    private void sendToPythonServer() {
-        new SendMessage().execute("aa bb cc");
-        Toast.makeText(this, "The message has been sent", Toast.LENGTH_SHORT).show();
     }
 
     public float doInference(float idFrom, float idTo, float vehicleType, float month, float day, float hour, float minute, float holiday, float vacation, float temperature, float pType) {
@@ -99,11 +87,8 @@ public class MainActivity extends AppCompatActivity {
         Map<Integer, Object> outputs = new HashMap();
         outputs.put(0, outputVal);
 
-//        Map<Integer, Object> outputVal = new HashMap();
-//        outputVal.put(0, new Object());
         tflite.runForMultipleInputsOutputs(inputVals, outputs);
 
-//        return (Float) outputVal.get(0);
         return outputVal[0][0];
     }
 
