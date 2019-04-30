@@ -9,6 +9,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.bussscheduleoptimizer.utils.LocationUtils;
 import com.bussscheduleoptimizer.utils.TFLiteUtils;
@@ -20,19 +21,15 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PointOfInterest;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
 import org.tensorflow.lite.Interpreter;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.util.HashMap;
-import java.util.Map;
 
-public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MainActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnPoiClickListener {
 
     private static final int PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 940;
     private static final float DEFAULT_ZOOM = 16f;
@@ -96,6 +93,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
+        map.setOnPoiClickListener(this);
 
         LatLng cluj = new LatLng(46.802792, 23.617358);
         map.addMarker(new MarkerOptions().position(cluj).title("Cluj"));
@@ -109,6 +107,15 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             // Get the current location of the device and set the position of the map.
             getDeviceLocation();
         }
+    }
+
+    @Override
+    public void onPoiClick(PointOfInterest poi) {
+        Toast.makeText(getApplicationContext(), "Clicked: " +
+                        poi.name + "\nPlace ID:" + poi.placeId +
+                        "\nLatitude:" + poi.latLng.latitude +
+                        " Longitude:" + poi.latLng.longitude,
+                Toast.LENGTH_SHORT).show();
     }
 
     private void getDeviceLocation() {
