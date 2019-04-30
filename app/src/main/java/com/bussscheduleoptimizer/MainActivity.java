@@ -1,12 +1,27 @@
 package com.bussscheduleoptimizer;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
-import android.support.v7.app.AppCompatActivity;
+import android.location.Location;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
+import android.util.Log;
+
+import com.bussscheduleoptimizer.utils.LocationUtils;
+import com.bussscheduleoptimizer.utils.TFLiteUtils;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import org.tensorflow.lite.Interpreter;
 
@@ -17,87 +32,121 @@ import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    EditText idFrom, idTo, vehicleType, month, day, hour, minute, holiday, vacation, temperature, pType;
-    TextView secondsDelay;
-    Button button;
+    private static final int PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 940;
+    private static final float DEFAULT_ZOOM = 16f;
+    private static final String TAG = MainActivity.class.getName();
+
+    private boolean mLocationPermissionsGranted = false;
+    private static final LatLng mDefaultLocation = new LatLng(46.772939, 23.621713);
+
     Interpreter tflite;
+    GoogleMap map;
+    FusedLocationProviderClient mFusedLocationProviderClient;
+    Location mLastKnownLocation;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        idFrom = findViewById(R.id.editTextFrom);
-        idTo = findViewById(R.id.editTextTo);
-        vehicleType = findViewById(R.id.editTextVehicleType);
-        month = findViewById(R.id.editTextMonth);
-        day = findViewById(R.id.editTextDay);
-        hour = findViewById(R.id.editTextHour);
-        minute = findViewById(R.id.editTextMinute);
-        holiday = findViewById(R.id.editTextHoliday);
-        vacation = findViewById(R.id.editTextVacation);
-        temperature = findViewById(R.id.editTextTemperature);
-        pType = findViewById(R.id.editTextPType);
-        secondsDelay = findViewById(R.id.textViewSecondsDelay);
-        button = findViewById(R.id.button);
+        // check location permission
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSION_REQUEST_ACCESS_FINE_LOCATION);
+        } else {
+            mLocationPermissionsGranted = true;
+        }
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
 
         try {
-            tflite = new Interpreter(loadModelFile());
+            tflite = new Interpreter(TFLiteUtils.loadModelFile(getApplicationContext(), this.getAssets()));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                float prediction = doInference(Float.valueOf(idFrom.getText().toString()),
-                        Float.valueOf(idTo.getText().toString()),
-                        Float.valueOf(vehicleType.getText().toString()),
-                        Float.valueOf(month.getText().toString()),
-                        Float.valueOf(day.getText().toString()),
-                        Float.valueOf(hour.getText().toString()),
-                        Float.valueOf(minute.getText().toString()),
-                        Float.valueOf(holiday.getText().toString()),
-                        Float.valueOf(vacation.getText().toString()),
-                        Float.valueOf(temperature.getText().toString()),
-                        Float.valueOf(pType.getText().toString())
-                );
-                String text = prediction + "";
-                secondsDelay.setText(text);
+//        button.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                float prediction = doInference(Float.valueOf(idFrom.getText().toString()),
+//                        Float.valueOf(idTo.getText().toString()),
+//                        Float.valueOf(vehicleType.getText().toString()),
+//                        Float.valueOf(month.getText().toString()),
+//                        Float.valueOf(day.getText().toString()),
+//                        Float.valueOf(hour.getText().toString()),
+//                        Float.valueOf(minute.getText().toString()),
+//                        Float.valueOf(holiday.getText().toString()),
+//                        Float.valueOf(vacation.getText().toString()),
+//                        Float.valueOf(temperature.getText().toString()),
+//                        Float.valueOf(pType.getText().toString())
+//                );
+//                String text = prediction + "";
+//                secondsDelay.setText(text);
+//            }
+//        });
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        map = googleMap;
+
+        LatLng cluj = new LatLng(46.802792, 23.617358);
+        map.addMarker(new MarkerOptions().position(cluj).title("Cluj"));
+        map.moveCamera(CameraUpdateFactory.newLatLng(cluj));
+        if (mLocationPermissionsGranted) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                mLastKnownLocation = null;
+                return;
             }
-        });
+            map.setMyLocationEnabled(true);
+            // Get the current location of the device and set the position of the map.
+            getDeviceLocation();
+        }
     }
 
-    public float doInference(float idFrom, float idTo, float vehicleType, float month, float day, float hour, float minute, float holiday, float vacation, float temperature, float pType) {
-        Object[] inputVals = new Object[11];
-        inputVals[0] = new float[]{day};
-        inputVals[1] = new float[]{holiday};
-        inputVals[2] = new float[]{hour};
-        inputVals[3] = new float[]{idFrom};
-        inputVals[4] = new float[]{idTo};
-        inputVals[5] = new float[]{minute};
-        inputVals[6] = new float[]{month};
-        inputVals[7] = new float[]{pType};
-        inputVals[8] = new float[]{temperature};
-        inputVals[9] = new float[]{vacation};
-        inputVals[10] = new float[]{vehicleType};
-
-        float[][] outputVal = new float[1][1];
-        Map<Integer, Object> outputs = new HashMap();
-        outputs.put(0, outputVal);
-
-        tflite.runForMultipleInputsOutputs(inputVals, outputs);
-
-        return outputVal[0][0];
+    private void getDeviceLocation() {
+        /*
+         * Get the best and most recent location of the device, which may be null in rare
+         * cases when a location is not available.
+         */
+        try {
+            if (mLocationPermissionsGranted) {
+                Task locationResult = mFusedLocationProviderClient.getLastLocation();
+                locationResult.addOnCompleteListener(this, new OnCompleteListener() {
+                    @Override
+                    public void onComplete(@NonNull Task task) {
+                        if (task.isSuccessful() && LocationUtils.isLocationServiceEnabled(getApplicationContext())) {
+                            // Set the map's camera position to the current location of the device.
+                            mLastKnownLocation = (Location) task.getResult();
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                    new LatLng(mLastKnownLocation.getLatitude(),
+                                            mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                        } else {
+                            Log.d(TAG, "Current location is null. Using defaults.");
+                            Log.e(TAG, "Exception: %s", task.getException());
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
+                            map.getUiSettings().setMyLocationButtonEnabled(false);
+                        }
+                    }
+                });
+            }
+        } catch(SecurityException e)  {
+            Log.e("Exception: %s", e.getMessage());
+        }
     }
 
-    private MappedByteBuffer loadModelFile() throws IOException {
-        AssetFileDescriptor fileDescriptor = this.getAssets().openFd("converted_model.tflite");
-        FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
-        FileChannel fileChannel = inputStream.getChannel();
-        long startOffset = fileDescriptor.getStartOffset();
-        long declaredLength = fileDescriptor.getDeclaredLength();
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
-    }
+
+
+
+
+
+
+
 }

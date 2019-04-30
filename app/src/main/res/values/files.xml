@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+     <string name="tflite_file" translatable="false">
+        converted_model.tflite
+    </string>
+</resources>
