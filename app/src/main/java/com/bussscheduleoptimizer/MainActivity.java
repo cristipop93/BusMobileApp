@@ -122,7 +122,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 locationResult.addOnCompleteListener(this, new OnCompleteListener() {
                     @Override
                     public void onComplete(@NonNull Task task) {
-                        if (task.isSuccessful() && LocationUtils.isLocationServiceEnabled(getApplicationContext())) {
+                        if (task.isSuccessful() && LocationUtils.isLocationServiceEnabled(getApplicationContext()) && task.getResult() != null) {
                             // Set the map's camera position to the current location of the device.
                             mLastKnownLocation = (Location) task.getResult();
                             map.moveCamera(CameraUpdateFactory.newLatLngZoom(
