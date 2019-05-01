@@ -139,7 +139,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                             Log.d(TAG, "Current location is null. Using defaults.");
                             Log.e(TAG, "Exception: %s", task.getException());
                             map.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
-                            map.getUiSettings().setMyLocationButtonEnabled(false);
+                            map.getUiSettings().setMyLocationButtonEnabled(true);
                         }
                     }
                 });
