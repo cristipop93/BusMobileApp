@@ -24,6 +24,13 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.tensorflow.lite.Interpreter;
 
@@ -68,6 +75,46 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        // Access a Cloud Firestore instance from your Activity
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+//        CollectionReference stationReference = db.collection("station");
+//        Query stationQuery = stationReference
+//                .whereEqualTo("name", "Campus Universitar Est");
+//        stationQuery.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//            @Override
+//            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                if (task.isSuccessful()) {
+//                    for (QueryDocumentSnapshot document : task.getResult()) {
+//                        Station station = document.toObject(Station.class);
+//                        Toast.makeText(getApplicationContext(),"station name: "  + station.getName() + " busses: " + station.getBusses() , Toast.LENGTH_SHORT).show();
+//                    }
+//                } else {
+//                    Toast.makeText(getApplicationContext(), "Query failed",
+//                            Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        });
+
+        DocumentReference docRef = db.collection("route").document("4");
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        Route route = document.toObject(Route.class);
+                        Toast.makeText(getApplicationContext(), "Route1: " + route.getRoute1() + " Route2: " + route.getRoute2(), Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "DocumentSnapshot data: " + document.getData());
+                    } else {
+                        Log.d(TAG, "No such document");
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+            }
+        });
 
 //        button.setOnClickListener(new View.OnClickListener() {
 //            @Override
