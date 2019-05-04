@@ -79,24 +79,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         // Access a Cloud Firestore instance from your Activity
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-//        CollectionReference stationReference = db.collection("station");
-//        Query stationQuery = stationReference
-//                .whereEqualTo("name", "Campus Universitar Est");
-//        stationQuery.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//            @Override
-//            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                if (task.isSuccessful()) {
-//                    for (QueryDocumentSnapshot document : task.getResult()) {
-//                        Station station = document.toObject(Station.class);
-//                        Toast.makeText(getApplicationContext(),"station name: "  + station.getName() + " busses: " + station.getBusses() , Toast.LENGTH_SHORT).show();
-//                    }
-//                } else {
-//                    Toast.makeText(getApplicationContext(), "Query failed",
-//                            Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//        });
-
         DocumentReference docRef = db.collection("route").document("4");
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -158,11 +140,25 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onPoiClick(PointOfInterest poi) {
-        Toast.makeText(getApplicationContext(), "Clicked: " +
-                        poi.name + "\nPlace ID:" + poi.placeId +
-                        "\nLatitude:" + poi.latLng.latitude +
-                        " Longitude:" + poi.latLng.longitude,
-                Toast.LENGTH_SHORT).show();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference stationReference = db.collection("station");
+        Query stationQuery = stationReference
+                .whereEqualTo("name", poi.name);
+        Log.i("onPoiClick: ", poi.name);
+        stationQuery.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        Station station = document.toObject(Station.class);
+                        Toast.makeText(getApplicationContext(),"station name: "  + station.getName() + " busses: " + station.getBusses() , Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "Query failed",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private void getDeviceLocation() {
