@@ -1,6 +1,7 @@
 package com.bussscheduleoptimizer;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.location.Location;
@@ -8,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -151,7 +153,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 if (task.isSuccessful()) {
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         Station station = document.toObject(Station.class);
-                        Toast.makeText(getApplicationContext(),"station name: "  + station.getName() + " busses: " + station.getBusses() , Toast.LENGTH_SHORT).show();
+                        StationDialog.showDialog(station, MainActivity.this);
                     }
                 } else {
                     Toast.makeText(getApplicationContext(), "Query failed",
