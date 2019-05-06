@@ -5,15 +5,14 @@ import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.List;
 
 public class StationDialog {
 
@@ -27,34 +26,38 @@ public class StationDialog {
 
                     }
                 });
-        StringBuilder contentBuilder = new StringBuilder();
-        for (Integer buss : station.getBusses()) {
-            getBusRoute(buss, contentBuilder);
-//            contentBuilder.append(buss).append("\t:");
-//            contentBuilder.append("\n");
-        }
-        builder.setMessage(contentBuilder.toString());
-        builder.create().show();
+        getBusses(station.getBusses(), builder);
     }
 
-    private static void getBusRoute(final Integer buss, final StringBuilder contentBuilder) {
+    private static void getBusses(final List<Integer> busses, final AlertDialog.Builder builder) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DocumentReference routeReference = db.collection("route").document(buss.toString());
-        routeReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        db.collection("route").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful() && task.getResult() != null) {
-                    Route route = task.getResult().toObject(Route.class);
-                    if (route != null) {
-                        contentBuilder.append(buss).append("\t:").append(route.getRoute1()).append("; ").append(route.getRoute2());
-                        contentBuilder.append("\n");
-                        Log.i(StationDialog.class.getName(), buss + " " + route.getRoute1() + " " + route.getRoute2());
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    StringBuilder contentBuilder = new StringBuilder();
+                    if (task.getResult() != null) {
+                        for (DocumentSnapshot document : task.getResult().getDocuments()) {
+                            if (busses.contains(Integer.parseInt(document.getId()))) {
+                                Route route = document.toObject(Route.class);
+                                if (route != null) {
+                                    contentBuilder.append(document.getId())
+                                            .append("\t: ")
+                                            .append(route.getRoute1())
+                                            .append(" ")
+                                            .append(route.getSchedule1())
+                                            .append("\n");
+                                }
+                            }
+                        }
+                        builder.setMessage(contentBuilder.toString());
+                        builder.create().show();
                     }
+
                 } else {
                     Log.e(StationDialog.class.getName(), "Query failed");
                 }
             }
         });
-
     }
 }
