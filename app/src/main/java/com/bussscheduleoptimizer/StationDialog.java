@@ -16,7 +16,7 @@ import java.util.List;
 
 public class StationDialog {
 
-    public static void showDialog(Station station, Activity activity) {
+    public static void showDialog(Station station, String stationId, Activity activity) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle(station.getName())
@@ -26,10 +26,10 @@ public class StationDialog {
 
                     }
                 });
-        getBusses(station.getBusses(), builder);
+        getBusses(station.getBusses(), builder, Integer.parseInt(stationId));
     }
 
-    private static void getBusses(final List<Integer> busses, final AlertDialog.Builder builder) {
+    private static void getBusses(final List<Integer> busses, final AlertDialog.Builder builder, final int stationId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("route").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -41,11 +41,10 @@ public class StationDialog {
                             if (busses.contains(Integer.parseInt(document.getId()))) {
                                 Route route = document.toObject(Route.class);
                                 if (route != null) {
+                                    List<Integer> routeToStation = getRouteToStation(stationId, route);
                                     contentBuilder.append(document.getId())
                                             .append("\t: ")
-                                            .append(route.getRoute1())
-                                            .append(" ")
-                                            .append(route.getSchedule1())
+                                            .append(routeToStation)
                                             .append("\n");
                                 }
                             }
@@ -53,11 +52,21 @@ public class StationDialog {
                         builder.setMessage(contentBuilder.toString());
                         builder.create().show();
                     }
-
                 } else {
                     Log.e(StationDialog.class.getName(), "Query failed");
                 }
             }
         });
+    }
+
+    private static List<Integer> getRouteToStation(int stationId, Route route) {
+        int index;
+        List<Integer> stations = null;
+        if ((index = route.getRoute1().indexOf(stationId)) != -1) {
+            stations = route.getRoute1().subList(0, index + 1);
+        } else if ((index = route.getRoute2().indexOf(stationId)) != -1) {
+            stations = route.getRoute2().subList(0, index + 1);
+        }
+        return stations;
     }
 }

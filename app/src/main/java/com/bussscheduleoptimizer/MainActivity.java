@@ -78,28 +78,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             e.printStackTrace();
         }
 
-        // Access a Cloud Firestore instance from your Activity
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        DocumentReference docRef = db.collection("route").document("4");
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        Route route = document.toObject(Route.class);
-                        Toast.makeText(getApplicationContext(), "Route1: " + route.getRoute1() + " Route2: " + route.getRoute2(), Toast.LENGTH_SHORT).show();
-                        Log.d(TAG, "DocumentSnapshot data: " + document.getData());
-                    } else {
-                        Log.d(TAG, "No such document");
-                    }
-                } else {
-                    Log.d(TAG, "get failed with ", task.getException());
-                }
-            }
-        });
-
 //        button.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {
@@ -153,7 +131,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 if (task.isSuccessful()) {
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         Station station = document.toObject(Station.class);
-                        StationDialog.showDialog(station, MainActivity.this);
+                        StationDialog.showDialog(station, document.getId(), MainActivity.this);
                     }
                 } else {
                     Toast.makeText(getApplicationContext(), "Query failed",
