@@ -15,6 +15,12 @@ import android.widget.Toast;
 
 import com.bussscheduleoptimizer.utils.LocationUtils;
 import com.bussscheduleoptimizer.utils.TFLiteUtils;
+import com.google.android.gms.awareness.Awareness;
+import com.google.android.gms.awareness.snapshot.WeatherResponse;
+import com.google.android.gms.awareness.snapshot.WeatherResult;
+import com.google.android.gms.awareness.state.Weather;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -37,6 +43,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import org.tensorflow.lite.Interpreter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnPoiClickListener {
 
@@ -51,6 +58,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     GoogleMap map;
     FusedLocationProviderClient mFusedLocationProviderClient;
     Location mLastKnownLocation;
+    Weather weather;
 
 
     @Override
@@ -65,6 +73,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         } else {
             mLocationPermissionsGranted = true;
         }
+        getWeatherInfo();
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -97,6 +106,29 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 //                secondsDelay.setText(text);
 //            }
 //        });
+    }
+
+    private void getWeatherInfo() {
+        if (!(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+            Awareness.getSnapshotClient(getApplicationContext()).getWeather().addOnCompleteListener(new OnCompleteListener<WeatherResponse>() {
+                @Override
+                public void onComplete(@NonNull Task<WeatherResponse> task) {
+                    if (task.isSuccessful()) {
+                        if (task.getResult() != null) {
+                            WeatherResponse weatherResponse = task.getResult();
+                            weather = weatherResponse.getWeather();
+                            if (weather != null) {
+                                Log.i("Weather", weather.getTemperature(Weather.CELSIUS) + " humidity: " + weather.getHumidity() + " conditions: " + Arrays.toString(weather.getConditions()));
+                            } else {
+                                Log.i("Weather", "null");
+                            }
+                        }
+                    } else {
+                        Log.e("Awereness", task.getException().toString());
+                    }
+                }
+            });
+        }
     }
 
     @Override
