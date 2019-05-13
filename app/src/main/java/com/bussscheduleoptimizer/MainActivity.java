@@ -54,11 +54,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private boolean mLocationPermissionsGranted = false;
     private static final LatLng mDefaultLocation = new LatLng(46.772939, 23.621713);
 
-    Interpreter tflite;
+    public static Interpreter tflite;
+    public static Weather weather;
+
     GoogleMap map;
     FusedLocationProviderClient mFusedLocationProviderClient;
     Location mLastKnownLocation;
-    Weather weather;
 
 
     @Override

@@ -6,12 +6,16 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
+import com.bussscheduleoptimizer.utils.TFLiteUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class StationDialog {
@@ -43,8 +47,12 @@ public class StationDialog {
                                 if (route != null) {
                                     List<Integer> routeToStation = getRouteToStation(stationId, route);
                                     contentBuilder.append(document.getId())
+                                            .append("-")
+                                            .append(VehicleType.getById(route.getVehicleTypeId()))
                                             .append("\t: ")
                                             .append(routeToStation)
+                                            .append(": ")
+                                            .append(TFLiteUtils.interpret(document.getId(), route.getVehicleTypeId(), routeToStation, getSchedule(stationId, route)))
                                             .append("\n");
                                 }
                             }
@@ -61,12 +69,22 @@ public class StationDialog {
 
     private static List<Integer> getRouteToStation(int stationId, Route route) {
         int index;
-        List<Integer> stations = null;
+        List<Integer> stations = new ArrayList<>();
         if ((index = route.getRoute1().indexOf(stationId)) != -1) {
             stations = route.getRoute1().subList(0, index + 1);
         } else if ((index = route.getRoute2().indexOf(stationId)) != -1) {
             stations = route.getRoute2().subList(0, index + 1);
         }
         return stations;
+    }
+
+    private static List<Integer> getSchedule(int stationId, Route route) {
+        List<Integer> schedule = null;
+        if (route.getSchedule1().contains(stationId)) {
+            return route.getSchedule1();
+        } else if (route.getSchedule2().contains(stationId)) {
+            return route.getSchedule2();
+        }
+        return new ArrayList<>(Collections.singletonList(600)); // default 6
     }
 }
