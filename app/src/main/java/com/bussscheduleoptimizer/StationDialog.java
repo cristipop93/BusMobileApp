@@ -52,7 +52,7 @@ public class StationDialog {
                                             .append("\t: ")
                                             .append(routeToStation)
                                             .append(": ")
-                                            .append(TFLiteUtils.interpret(document.getId(), route.getVehicleTypeId(), routeToStation, getSchedule(stationId, route)))
+                                            .append(TFLiteUtils.interpret(route.getVehicleTypeId(), routeToStation, getSchedule(stationId, route)))
                                             .append("\n");
                                 }
                             }
@@ -79,10 +79,9 @@ public class StationDialog {
     }
 
     private static List<Integer> getSchedule(int stationId, Route route) {
-        List<Integer> schedule = null;
-        if (route.getSchedule1().contains(stationId)) {
+        if (route.getRoute1().contains(stationId)) {
             return route.getSchedule1();
-        } else if (route.getSchedule2().contains(stationId)) {
+        } else if (route.getRoute2().contains(stationId)) {
             return route.getSchedule2();
         }
         return new ArrayList<>(Collections.singletonList(600)); // default 6

@@ -3,6 +3,7 @@ package com.bussscheduleoptimizer.utils;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.util.Log;
 
 import com.bussscheduleoptimizer.PrecipitationType;
 import com.bussscheduleoptimizer.R;
@@ -14,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,6 +39,7 @@ public class TFLiteUtils {
     }
 
     public static float doInference(float idFrom, float idTo, float vehicleType, float month, float day, float hour, float minute, float holiday, float vacation, float temperature, float pType) {
+        Log.i(TFLiteUtils.class.getName(), "from: " + idFrom + " to: " + idTo + " vehicleType: " + vehicleType + " month: " + month + " day: " + day + " hour: " + hour + " minute: " + minute + " holiday: " + holiday + " vacation: " + vacation + " temp: " + temperature + " pType: " + pType);
         Object[] inputVals = new Object[11];
         inputVals[0] = new float[]{day};
         inputVals[1] = new float[]{holiday};
@@ -51,7 +54,7 @@ public class TFLiteUtils {
         inputVals[10] = new float[]{vehicleType};
 
         float[][] outputVal = new float[1][1];
-        Map<Integer, Object> outputs = new HashMap();
+        Map<Integer, Object> outputs = new HashMap<>();
         outputs.put(0, outputVal);
 
         tflite.runForMultipleInputsOutputs(inputVals, outputs);
@@ -59,7 +62,7 @@ public class TFLiteUtils {
         return outputVal[0][0];
     }
 
-    public static float interpret(String busId, Integer vehicleTypeId, List<Integer> routeToStation, List<Integer> schedule) {
+    public static String interpret(Integer vehicleTypeId, List<Integer> routeToStation, List<Integer> schedule) {
         float temperature = weather.getTemperature(Weather.CELSIUS); // maybe round to int??
         int condition = 1;
         int[] conditions = weather.getConditions();
@@ -70,15 +73,18 @@ public class TFLiteUtils {
         Date currentDate = new Date(System.currentTimeMillis());
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentDate);
-        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) + 1; // day of week starting at 0
+        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
+        if (dayOfWeek == 0) {
+            dayOfWeek = 7;
+        }
         int month = calendar.get(Calendar.MONTH);
-        int hour = calendar.get(Calendar.HOUR);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
         int vacation = 0, holiday = 0;
 
-        float startingTime = getClosestTime(schedule, hour * 100 + minute);
+        int startingTime = getClosestTime(schedule, hour * 100 + minute);
         if (routeToStation.size() == 1) {
-            return startingTime;
+            return (startingTime / 60) + ":" + (startingTime % 60) + ":00";
         } else {
             float delay = 0;
             int station = routeToStation.get(0);
@@ -86,8 +92,17 @@ public class TFLiteUtils {
                 delay += doInference(station, routeToStation.get(i), vehicleTypeId, month, dayOfWeek, hour, minute, holiday, vacation, temperature, condition);
                 station = routeToStation.get(i);
             }
-//            delay = delay / 60; // transform to minutes
-            return delay;
+            int delayMinutes = Math.round(delay) / 60; // transform to minutes
+            int delaySeconds = Math.round(delay) % 60; // transform to seconds
+            Log.i(TFLiteUtils.class.getName(), "delaySec: " + delay + " delayM: " + delayMinutes + " delayS: " + delaySeconds);
+            int startHour = startingTime / 100;
+            int startMinutes = startingTime % 100;
+            startMinutes += delayMinutes;
+            if (startMinutes % 60 != startMinutes) {
+                startHour++;
+                startMinutes = startMinutes % 60;
+            }
+            return startHour + ":" + startMinutes + ":" + delaySeconds;
         }
     }
 
@@ -108,17 +123,28 @@ public class TFLiteUtils {
 
     private static int convertCondition(int condition) {
         switch (condition) {
-            case Weather.CONDITION_CLEAR: return PrecipitationType.DRY.getId();
-            case Weather.CONDITION_CLOUDY: return PrecipitationType.RAIN.getId();
-            case Weather.CONDITION_FOGGY: return PrecipitationType.RAIN.getId();
-            case Weather.CONDITION_HAZY: return PrecipitationType.DRY.getId();
-            case Weather.CONDITION_ICY: return PrecipitationType.SNOW.getId();
-            case Weather.CONDITION_RAINY: return PrecipitationType.RAIN.getId();
-            case Weather.CONDITION_SNOWY: return PrecipitationType.SNOW.getId();
-            case Weather.CONDITION_STORMY: return PrecipitationType.RAIN.getId();
-            case Weather.CONDITION_UNKNOWN: return PrecipitationType.DRY.getId();
-            case Weather.CONDITION_WINDY: return PrecipitationType.DRY.getId();
-            default: return 1;
+            case Weather.CONDITION_CLEAR:
+                return PrecipitationType.DRY.getId();
+            case Weather.CONDITION_CLOUDY:
+                return PrecipitationType.RAIN.getId();
+            case Weather.CONDITION_FOGGY:
+                return PrecipitationType.RAIN.getId();
+            case Weather.CONDITION_HAZY:
+                return PrecipitationType.DRY.getId();
+            case Weather.CONDITION_ICY:
+                return PrecipitationType.SNOW.getId();
+            case Weather.CONDITION_RAINY:
+                return PrecipitationType.RAIN.getId();
+            case Weather.CONDITION_SNOWY:
+                return PrecipitationType.SNOW.getId();
+            case Weather.CONDITION_STORMY:
+                return PrecipitationType.RAIN.getId();
+            case Weather.CONDITION_UNKNOWN:
+                return PrecipitationType.DRY.getId();
+            case Weather.CONDITION_WINDY:
+                return PrecipitationType.DRY.getId();
+            default:
+                return 1;
         }
     }
 }
