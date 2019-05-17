@@ -29,6 +29,9 @@ import static com.bussscheduleoptimizer.MapFragment.weather;
 
 public class TFLiteUtils {
 
+    public static float s_vehicleType, s_month, s_day, s_hour, s_minute, s_holiday, s_vacation, s_temperature, s_pType;
+    public static boolean useTestData;
+
     public static MappedByteBuffer loadModelFile(Context applicationContext, AssetManager assets) throws IOException {
         AssetFileDescriptor fileDescriptor = assets.openFd(applicationContext.getResources().getString(R.string.tflite_file));
         FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
@@ -41,6 +44,17 @@ public class TFLiteUtils {
     public static float doInference(float idFrom, float idTo, float vehicleType, float month, float day, float hour, float minute, float holiday, float vacation, float temperature, float pType) {
         Log.i(TFLiteUtils.class.getName(), "from: " + idFrom + " to: " + idTo + " vehicleType: " + vehicleType + " month: " + month + " day: " + day + " hour: " + hour + " minute: " + minute + " holiday: " + holiday + " vacation: " + vacation + " temp: " + temperature + " pType: " + pType);
         Object[] inputVals = new Object[11];
+        if (useTestData) {
+            vehicleType = s_vehicleType;
+            month = s_month;
+            day = s_day;
+            hour = s_hour;
+            minute = s_minute;
+            holiday = s_holiday;
+            vacation = s_vacation;
+            temperature = s_temperature;
+            pType = s_pType;
+        }
         inputVals[0] = new float[]{day};
         inputVals[1] = new float[]{holiday};
         inputVals[2] = new float[]{hour};
