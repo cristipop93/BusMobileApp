@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.bussscheduleoptimizer.MainActivity.tflite;
-import static com.bussscheduleoptimizer.MainActivity.weather;
+import static com.bussscheduleoptimizer.MapFragment.weather;
 
 public class TFLiteUtils {
 
