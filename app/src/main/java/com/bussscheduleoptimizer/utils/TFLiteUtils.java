@@ -84,7 +84,7 @@ public class TFLiteUtils {
 
         int startingTime = getClosestTime(schedule, hour * 100 + minute);
         if (routeToStation.size() == 1) {
-            return (startingTime / 60) + ":" + (startingTime % 60) + ":00";
+            return (startingTime / 100) + ":" + (startingTime % 100) + ":00";
         } else {
             float delay = 0;
             int station = routeToStation.get(0);
