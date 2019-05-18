@@ -36,14 +36,21 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.maps.DirectionsApiRequest;
+import com.google.maps.GeoApiContext;
+import com.google.maps.PendingResult;
+import com.google.maps.model.DirectionsResult;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener {
+public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickListener,
+        GoogleMap.OnMapClickListener, DirectionsCalculator {
 
     private static final int PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 940;
     private static final float DEFAULT_ZOOM = 16f;
@@ -64,6 +71,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
     FusedLocationProviderClient mFusedLocationProviderClient;
     Location mLastKnownLocation;
     View myView;
+    GeoApiContext mGeoApiContext = null;
 
     @Nullable
     @Override
@@ -114,8 +122,52 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
                 }
             }
         });
+        if (mGeoApiContext == null) {
+            mGeoApiContext = new GeoApiContext.Builder()
+                    .apiKey(getString(R.string.key))
+                    .build();
+        }
 
         return myView;
+    }
+
+    public void calculateDirections(List<Integer> completeRoute){
+        Log.d(TAG, "calculateDirections: calculating directions.");
+
+        if (completeRoute == null || completeRoute.isEmpty()) {
+            return;
+        }
+        GeoPoint endLocation = stations.get(completeRoute.get(completeRoute.size()-1).toString()).getLocation();
+        GeoPoint startLocation = stations.get(completeRoute.get(0).toString()).getLocation();
+        com.google.maps.model.LatLng destination = new com.google.maps.model.LatLng(
+                endLocation.getLatitude(),
+                endLocation.getLongitude()
+        );
+        DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
+
+        directions.alternatives(true);
+        directions.origin(
+                new com.google.maps.model.LatLng(
+                        startLocation.getLatitude(),
+                        startLocation.getLongitude()
+                )
+        );
+        Log.d(TAG, "calculateDirections: destination: " + destination.toString());
+        directions.destination(destination).setCallback(new PendingResult.Callback<DirectionsResult>() {
+            @Override
+            public void onResult(DirectionsResult result) {
+                Log.d(TAG, "calculateDirections: routes: " + result.routes[0].toString());
+                Log.d(TAG, "calculateDirections: duration: " + result.routes[0].legs[0].duration);
+                Log.d(TAG, "calculateDirections: distance: " + result.routes[0].legs[0].distance);
+                Log.d(TAG, "calculateDirections: geocodedWayPoints: " + result.geocodedWaypoints[0].toString());
+            }
+
+            @Override
+            public void onFailure(Throwable e) {
+                Log.e(TAG, "calculateDirections: Failed to get directions: " + e.getMessage() );
+
+            }
+        });
     }
 
     private void setStationMarkers() {
@@ -183,7 +235,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
         if (selectedStation == null || stationId == null) {
             return false;
         }
-        StationDialog.showDialog(selectedStation, stationId, myView);
+        StationDialog.showDialog(selectedStation, stationId, myView, this);
         if (mMapLayoutState == MAP_LAYOUT_STATE_EXPANDED)
             contractMapAnimation();
         return false;

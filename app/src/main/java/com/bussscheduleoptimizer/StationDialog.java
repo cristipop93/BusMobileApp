@@ -28,12 +28,12 @@ import java.util.List;
 public class StationDialog {
     private static final String TAG = "StationDialog";
 
-    public static void showDialog(Station station, String stationId, View view) {
+    public static void showDialog(Station station, String stationId, View view, DirectionsCalculator directionsCalculator) {
 
-        getBusses(station.getBusses(), view, Integer.parseInt(stationId));
+        getBusses(station.getBusses(), view, Integer.parseInt(stationId), directionsCalculator);
     }
 
-    private static void getBusses(final List<Integer> busses, final View view, final int stationId) {
+    private static void getBusses(final List<Integer> busses, final View view, final int stationId, DirectionsCalculator directionsCalculator) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("route").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -62,7 +62,7 @@ public class StationDialog {
                                 }
                             }
                         }
-                        initRecyclerView(view, results);
+                        initRecyclerView(view, results, directionsCalculator);
                     }
                 } else {
                     Log.e(StationDialog.class.getName(), "Query failed");
@@ -71,10 +71,10 @@ public class StationDialog {
         });
     }
 
-    private static void initRecyclerView(View view, ArrayList<Result> results) {
+    private static void initRecyclerView(View view, ArrayList<Result> results, DirectionsCalculator directionsCalculator) {
         Log.d(TAG, "initRecyclerView: init recyclerView");
         RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
-        RecyclerViewAdapter adapter = new RecyclerViewAdapter(view.getContext(), results);
+        RecyclerViewAdapter adapter = new RecyclerViewAdapter(view.getContext(), results, directionsCalculator);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 

@@ -13,6 +13,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bussscheduleoptimizer.DirectionsCalculator;
 import com.bussscheduleoptimizer.R;
 import com.bussscheduleoptimizer.model.Result;
 
@@ -24,10 +25,12 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     private ArrayList<Result> mResults = new ArrayList<>();
     private Context mContext;
+    private DirectionsCalculator directionsCalculator;
 
-    public RecyclerViewAdapter(Context mContext, ArrayList<Result> mResults) {
+    public RecyclerViewAdapter(Context mContext, ArrayList<Result> mResults, DirectionsCalculator directionsCalculator) {
         this.mResults = mResults;
         this.mContext = mContext;
+        this.directionsCalculator = directionsCalculator;
     }
 
     @NonNull
@@ -58,6 +61,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             public void onClick(View view) {
                 Log.d(TAG, "onClick: parentLayout: " + result.getBusId());
                 Toast.makeText(mContext, "parent: " + result.getBusId(), Toast.LENGTH_SHORT).show();
+                directionsCalculator.calculateDirections(result.getCompleteRoute());
             }
         });
 

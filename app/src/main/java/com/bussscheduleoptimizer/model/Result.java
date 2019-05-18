@@ -14,6 +14,7 @@ public class Result {
         this.vehicleType = vehicleType;
         this.routeToStation = routeToStation;
         this.delay = delay;
+        this.completeRoute = completeRoute;
     }
 
     public String getBusId() {
