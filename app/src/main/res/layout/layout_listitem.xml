@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="15dp"
+    android:id="@+id/item_parent">
+
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:id="@+id/bus_icn"
+        android:src="@mipmap/ic_launcher"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/bus"
+        android:text="Buss Nr"
+        android:layout_toRightOf="@+id/bus_icn"
+        android:textColor="#000"
+        android:textStyle="bold"
+        android:textSize="17sp"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="20dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/delay"
+        android:text="delay"
+        android:layout_toRightOf="@+id/bus"
+        android:textColor="#000"
+        android:textSize="17sp"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="20dp"/>
+
+    <ImageButton
+        android:id="@+id/btn_arrived"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="10dp"
+        android:src="@drawable/baseline_av_timer_black_18dp" />
+
+</RelativeLayout>

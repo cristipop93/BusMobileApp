@@ -4,8 +4,13 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 
+import com.bussscheduleoptimizer.adapters.RecyclerViewAdapter;
+import com.bussscheduleoptimizer.model.Result;
 import com.bussscheduleoptimizer.model.Route;
 import com.bussscheduleoptimizer.model.Station;
 import com.bussscheduleoptimizer.model.VehicleType;
@@ -21,21 +26,14 @@ import java.util.Collections;
 import java.util.List;
 
 public class StationDialog {
+    private static final String TAG = "StationDialog";
 
-    public static void showDialog(Station station, String stationId, Activity activity) {
+    public static void showDialog(Station station, String stationId, View view) {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setTitle(station.getName())
-                .setPositiveButton("ok", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                    }
-                });
-        getBusses(station.getBusses(), builder, Integer.parseInt(stationId));
+        getBusses(station.getBusses(), view, Integer.parseInt(stationId));
     }
 
-    private static void getBusses(final List<Integer> busses, final AlertDialog.Builder builder, final int stationId) {
+    private static void getBusses(final List<Integer> busses, final View view, final int stationId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("route").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -43,30 +41,42 @@ public class StationDialog {
                 if (task.isSuccessful()) {
                     StringBuilder contentBuilder = new StringBuilder();
                     if (task.getResult() != null) {
+                        ArrayList<Result> results = new ArrayList<>();
                         for (DocumentSnapshot document : task.getResult().getDocuments()) {
                             if (busses.contains(Integer.parseInt(document.getId()))) {
                                 Route route = document.toObject(Route.class);
                                 if (route != null) {
                                     List<Integer> routeToStation = getRouteToStation(stationId, route);
+                                    String inferenceResult = TFLiteUtils.interpret(route.getVehicleTypeId(), routeToStation, getSchedule(stationId, route));
                                     contentBuilder.append(document.getId())
                                             .append("-")
                                             .append(VehicleType.getById(route.getVehicleTypeId()))
                                             .append("\t: ")
                                             .append(routeToStation)
                                             .append(": ")
-                                            .append(TFLiteUtils.interpret(route.getVehicleTypeId(), routeToStation, getSchedule(stationId, route)))
+                                            .append(inferenceResult)
                                             .append("\n");
+                                    results.add(new Result(document.getId(), VehicleType.getById(route.getVehicleTypeId()), routeToStation, inferenceResult));
+
                                 }
                             }
                         }
-                        builder.setMessage(contentBuilder.toString());
-                        builder.create().show();
+                        initRecyclerView(view, results);
                     }
                 } else {
                     Log.e(StationDialog.class.getName(), "Query failed");
                 }
             }
         });
+    }
+
+    private static void initRecyclerView(View view, ArrayList<Result> results) {
+        Log.d(TAG, "initRecyclerView: init recyclerView");
+        RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
+        RecyclerViewAdapter adapter = new RecyclerViewAdapter(view.getContext(), results);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
+
     }
 
     private static List<Integer> getRouteToStation(int stationId, Route route) {

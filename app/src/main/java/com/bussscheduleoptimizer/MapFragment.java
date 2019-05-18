@@ -188,7 +188,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
         if (selectedStation == null || stationId == null) {
             return false;
         }
-        StationDialog.showDialog(selectedStation, stationId, getActivity());
+        StationDialog.showDialog(selectedStation, stationId, myView);
         if (mMapLayoutState == MAP_LAYOUT_STATE_EXPANDED)
             contractMapAnimation();
         return false;
