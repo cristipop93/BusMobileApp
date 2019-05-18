@@ -73,6 +73,8 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
     public static Weather weather;
     public static Map<String, Station> stations;
 
+    public List<Polyline> polylineList;
+
     RelativeLayout relativeLayout;
     LinearLayout mapContainer;
     GoogleMap map;
@@ -108,7 +110,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        polylineList = new ArrayList<>();
         mMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap mMap) {
@@ -201,13 +203,22 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
                                 latLng.lng
                         ));
                     }
+                    removeExistingPolyLines();
                     Polyline polyline = map.addPolyline(new PolylineOptions().addAll(newDecodedPath));
+                    polylineList.add(polyline);
                     polyline.setColor(ContextCompat.getColor(getActivity(), R.color.darkGrey));
                     polyline.setClickable(false);
 
                 }
             }
         });
+    }
+
+    private void removeExistingPolyLines() {
+        for (Polyline polyline : polylineList) {
+            polyline.remove();
+        }
+        polylineList.clear();
     }
 
     private void setStationMarkers() {
@@ -284,6 +295,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
     @Override
     public void onMapClick(LatLng latLng) {
         expandMapAnimation();
+        removeExistingPolyLines();
     }
 
     private void getDeviceLocation() {
