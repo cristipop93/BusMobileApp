@@ -43,7 +43,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickListener {
+public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener {
 
     private static final int PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 940;
     private static final float DEFAULT_ZOOM = 16f;
@@ -86,12 +86,6 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
 
         relativeLayout = myView.findViewById(R.id.relativeLayout);
         mapContainer = myView.findViewById(R.id.map_container);
-        myView.findViewById(R.id.btn_close).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                expandMapAnimation();
-            }
-        });
 
         try {
             MapsInitializer.initialize(getActivity().getApplicationContext());
@@ -105,6 +99,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
                 map = mMap;
 
                 map.setOnMarkerClickListener(MapFragment.this);
+                map.setOnMapClickListener(MapFragment.this);
                 loadStationMarkers();
                 map.getUiSettings().setCompassEnabled(true);
                 map.getUiSettings().setZoomControlsEnabled(true);
@@ -192,6 +187,11 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
         if (mMapLayoutState == MAP_LAYOUT_STATE_EXPANDED)
             contractMapAnimation();
         return false;
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+        expandMapAnimation();
     }
 
     private void getDeviceLocation() {

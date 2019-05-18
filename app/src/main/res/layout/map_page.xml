@@ -27,17 +27,6 @@
         android:layout_weight="0"
         android:id="@+id/relativeLayout">
 
-        <ImageButton
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:src="@drawable/ic_close"
-            android:background="@color/cardview_light_background"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="10dp"
-            android:id="@+id/btn_close"/>
-
-
         <android.support.v7.widget.RecyclerView
             android:layout_height="match_parent"
             android:layout_width="match_parent"
