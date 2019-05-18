@@ -1,4 +1,4 @@
-package com.bussscheduleoptimizer;
+package com.bussscheduleoptimizer.model;
 
 import com.google.firebase.firestore.IgnoreExtraProperties;
 

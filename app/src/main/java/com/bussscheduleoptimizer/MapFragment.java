@@ -14,8 +14,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.bussscheduleoptimizer.model.Station;
 import com.bussscheduleoptimizer.utils.LocationUtils;
-import com.bussscheduleoptimizer.utils.TFLiteUtils;
 import com.google.android.gms.awareness.Awareness;
 import com.google.android.gms.awareness.snapshot.WeatherResponse;
 import com.google.android.gms.awareness.state.Weather;
@@ -26,7 +26,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
@@ -38,9 +37,6 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import org.tensorflow.lite.Interpreter;
-
-import java.io.IOException;
 import java.util.Arrays;
 
 public class MapFragment extends Fragment implements GoogleMap.OnPoiClickListener {
@@ -94,6 +90,8 @@ public class MapFragment extends Fragment implements GoogleMap.OnPoiClickListene
                 LatLng cluj = new LatLng(46.802792, 23.617358);
                 map.addMarker(new MarkerOptions().position(cluj).title("Cluj"));
                 map.moveCamera(CameraUpdateFactory.newLatLng(cluj));
+                map.getUiSettings().setCompassEnabled(true);
+                map.getUiSettings().setZoomControlsEnabled(true);
                 if (mLocationPermissionsGranted) {
                     if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         mLastKnownLocation = null;

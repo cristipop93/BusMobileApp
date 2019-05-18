@@ -1,4 +1,4 @@
-package com.bussscheduleoptimizer;
+package com.bussscheduleoptimizer.model;
 
 public enum VehicleType {
     BUS(0),

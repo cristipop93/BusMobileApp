@@ -5,17 +5,14 @@ import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.util.Log;
 
-import com.bussscheduleoptimizer.PrecipitationType;
+import com.bussscheduleoptimizer.model.PrecipitationType;
 import com.bussscheduleoptimizer.R;
 import com.google.android.gms.awareness.state.Weather;
-
-import org.tensorflow.lite.Interpreter;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;

@@ -6,6 +6,9 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
+import com.bussscheduleoptimizer.model.Route;
+import com.bussscheduleoptimizer.model.Station;
+import com.bussscheduleoptimizer.model.VehicleType;
 import com.bussscheduleoptimizer.utils.TFLiteUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -14,7 +17,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
