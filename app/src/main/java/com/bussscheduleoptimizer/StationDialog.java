@@ -47,6 +47,7 @@ public class StationDialog {
                                 Route route = document.toObject(Route.class);
                                 if (route != null) {
                                     List<Integer> routeToStation = getRouteToStation(stationId, route);
+                                    List<Integer> completeRoute = getCompleteRoute(stationId, route);
                                     String inferenceResult = TFLiteUtils.interpret(route.getVehicleTypeId(), routeToStation, getSchedule(stationId, route));
                                     contentBuilder.append(document.getId())
                                             .append("-")
@@ -56,7 +57,7 @@ public class StationDialog {
                                             .append(": ")
                                             .append(inferenceResult)
                                             .append("\n");
-                                    results.add(new Result(document.getId(), VehicleType.getById(route.getVehicleTypeId()), routeToStation, inferenceResult));
+                                    results.add(new Result(document.getId(), VehicleType.getById(route.getVehicleTypeId()), routeToStation, inferenceResult, completeRoute));
 
                                 }
                             }
@@ -97,5 +98,13 @@ public class StationDialog {
             return route.getSchedule2();
         }
         return new ArrayList<>(Collections.singletonList(600)); // default 6
+    }
+
+    private static List<Integer> getCompleteRoute(int stationId, Route route) {
+        if (route.getRoute1().contains(stationId)) {
+            return route.getRoute1();
+        } else {
+            return route.getRoute2();
+        }
     }
 }

@@ -7,8 +7,9 @@ public class Result {
     VehicleType vehicleType;
     List<Integer> routeToStation;
     String delay;
+    List<Integer> completeRoute;
 
-    public Result(String busId, VehicleType vehicleType, List<Integer> routeToStation, String delay) {
+    public Result(String busId, VehicleType vehicleType, List<Integer> routeToStation, String delay, List<Integer> completeRoute) {
         this.busId = busId;
         this.vehicleType = vehicleType;
         this.routeToStation = routeToStation;
@@ -45,5 +46,13 @@ public class Result {
 
     public void setDelay(String delay) {
         this.delay = delay;
+    }
+
+    public List<Integer> getCompleteRoute() {
+        return completeRoute;
+    }
+
+    public void setCompleteRoute(List<Integer> completeRoute) {
+        this.completeRoute = completeRoute;
     }
 }
