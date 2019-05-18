@@ -1,6 +1,7 @@
 package com.bussscheduleoptimizer;
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -12,10 +13,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.bussscheduleoptimizer.model.Station;
 import com.bussscheduleoptimizer.utils.LocationUtils;
+import com.bussscheduleoptimizer.utils.ViewWeightAnimationWrapper;
 import com.google.android.gms.awareness.Awareness;
 import com.google.android.gms.awareness.snapshot.WeatherResponse;
 import com.google.android.gms.awareness.state.Weather;
@@ -44,6 +48,9 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
     private static final int PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 940;
     private static final float DEFAULT_ZOOM = 16f;
     private static final String TAG = MainActivity.class.getName();
+    private static final int MAP_LAYOUT_STATE_CONTRACTED = 0;
+    private static final int MAP_LAYOUT_STATE_EXPANDED = 1;
+    private int mMapLayoutState = 1;
 
     private boolean mLocationPermissionsGranted = false;
     private static final LatLng mDefaultLocation = new LatLng(46.772939, 23.621713);
@@ -51,6 +58,8 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
     public static Weather weather;
     public static Map<String, Station> stations;
 
+    RelativeLayout relativeLayout;
+    LinearLayout mapContainer;
     GoogleMap map;
     FusedLocationProviderClient mFusedLocationProviderClient;
     Location mLastKnownLocation;
@@ -74,6 +83,15 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
         MapView mMapView = (MapView) myView.findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
         mMapView.onResume(); // needed to get the map to display immediately
+
+        relativeLayout = myView.findViewById(R.id.relativeLayout);
+        mapContainer = myView.findViewById(R.id.map_container);
+        myView.findViewById(R.id.btn_close).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                expandMapAnimation();
+            }
+        });
 
         try {
             MapsInitializer.initialize(getActivity().getApplicationContext());
@@ -171,6 +189,8 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
             return false;
         }
         StationDialog.showDialog(selectedStation, stationId, getActivity());
+        if (mMapLayoutState == MAP_LAYOUT_STATE_EXPANDED)
+            contractMapAnimation();
         return false;
     }
 
@@ -203,5 +223,45 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
         } catch(SecurityException e)  {
             Log.e("Exception: %s", e.getMessage());
         }
+    }
+
+    private void expandMapAnimation(){
+        ViewWeightAnimationWrapper mapAnimationWrapper = new ViewWeightAnimationWrapper(mapContainer);
+        ObjectAnimator mapAnimation = ObjectAnimator.ofFloat(mapAnimationWrapper,
+                "weight",
+                65,
+                100);
+        mapAnimation.setDuration(800);
+
+        ViewWeightAnimationWrapper recyclerAnimationWrapper = new ViewWeightAnimationWrapper(relativeLayout);
+        ObjectAnimator recyclerAnimation = ObjectAnimator.ofFloat(recyclerAnimationWrapper,
+                "weight",
+                35,
+                0);
+        recyclerAnimation.setDuration(800);
+
+        recyclerAnimation.start();
+        mapAnimation.start();
+        mMapLayoutState = MAP_LAYOUT_STATE_EXPANDED;
+    }
+
+    private void contractMapAnimation(){
+        ViewWeightAnimationWrapper mapAnimationWrapper = new ViewWeightAnimationWrapper(mapContainer);
+        ObjectAnimator mapAnimation = ObjectAnimator.ofFloat(mapAnimationWrapper,
+                "weight",
+                100,
+                65);
+        mapAnimation.setDuration(800);
+
+        ViewWeightAnimationWrapper recyclerAnimationWrapper = new ViewWeightAnimationWrapper(relativeLayout);
+        ObjectAnimator recyclerAnimation = ObjectAnimator.ofFloat(recyclerAnimationWrapper,
+                "weight",
+                0,
+                35);
+        recyclerAnimation.setDuration(800);
+
+        recyclerAnimation.start();
+        mapAnimation.start();
+        mMapLayoutState = MAP_LAYOUT_STATE_CONTRACTED;
     }
 }
