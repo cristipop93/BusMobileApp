@@ -27,19 +27,19 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PointOfInterest;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
-public class MapFragment extends Fragment implements GoogleMap.OnPoiClickListener {
+public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickListener {
 
     private static final int PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 940;
     private static final float DEFAULT_ZOOM = 16f;
@@ -49,6 +49,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnPoiClickListene
     private static final LatLng mDefaultLocation = new LatLng(46.772939, 23.621713);
 
     public static Weather weather;
+    public static Map<String, Station> stations;
 
     GoogleMap map;
     FusedLocationProviderClient mFusedLocationProviderClient;
@@ -85,11 +86,8 @@ public class MapFragment extends Fragment implements GoogleMap.OnPoiClickListene
             public void onMapReady(GoogleMap mMap) {
                 map = mMap;
 
-                map.setOnPoiClickListener(MapFragment.this);
-
-                LatLng cluj = new LatLng(46.802792, 23.617358);
-                map.addMarker(new MarkerOptions().position(cluj).title("Cluj"));
-                map.moveCamera(CameraUpdateFactory.newLatLng(cluj));
+                map.setOnMarkerClickListener(MapFragment.this);
+                loadStationMarkers();
                 map.getUiSettings().setCompassEnabled(true);
                 map.getUiSettings().setZoomControlsEnabled(true);
                 if (mLocationPermissionsGranted) {
@@ -106,6 +104,30 @@ public class MapFragment extends Fragment implements GoogleMap.OnPoiClickListene
 
         return myView;
     }
+
+    private void setStationMarkers() {
+        for (Station station : stations.values()) {
+            map.addMarker(new MarkerOptions().position(new LatLng(station.getLocation().getLatitude(), station.getLocation().getLongitude())).title(station.getName()));
+        }
+    }
+
+    private void loadStationMarkers() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("station").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    stations = new HashMap<>();
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        Station station = document.toObject(Station.class);
+                        stations.put(document.getId(), station);
+                    }
+                    setStationMarkers();
+                }
+            }
+        });
+    }
+
 
     private void getWeatherInfo() {
         if (!(ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
@@ -130,28 +152,26 @@ public class MapFragment extends Fragment implements GoogleMap.OnPoiClickListene
         }
     }
 
-
     @Override
-    public void onPoiClick(PointOfInterest poi) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        CollectionReference stationReference = db.collection("station");
-        Query stationQuery = stationReference
-                .whereEqualTo("name", poi.name);
-        Log.i("onPoiClick: ", poi.name);
-        stationQuery.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    for (QueryDocumentSnapshot document : task.getResult()) {
-                        Station station = document.toObject(Station.class);
-                        StationDialog.showDialog(station, document.getId(), getActivity());
-                    }
-                } else {
-                    Toast.makeText(getActivity().getApplicationContext(), "Query failed",
-                            Toast.LENGTH_SHORT).show();
-                }
+    public boolean onMarkerClick(Marker marker) {
+        Station selectedStation = null;
+        String stationId = null;
+        for (String id : stations.keySet()) {
+            Station station = stations.get(id);
+            if (station == null) {
+                continue;
             }
-        });
+            if (station.getName().equals(marker.getTitle())) {
+                selectedStation = station;
+                stationId = id;
+                break;
+            }
+        }
+        if (selectedStation == null || stationId == null) {
+            return false;
+        }
+        StationDialog.showDialog(selectedStation, stationId, getActivity());
+        return false;
     }
 
     private void getDeviceLocation() {
