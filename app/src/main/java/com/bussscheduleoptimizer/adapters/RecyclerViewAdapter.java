@@ -60,7 +60,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             @Override
             public void onClick(View view) {
                 Log.d(TAG, "onClick: parentLayout: " + result.getBusId());
-                Toast.makeText(mContext, "parent: " + result.getBusId(), Toast.LENGTH_SHORT).show();
                 directionsCalculator.calculateDirections(result.getCompleteRoute());
             }
         });
