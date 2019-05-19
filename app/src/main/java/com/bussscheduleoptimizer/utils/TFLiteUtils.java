@@ -93,8 +93,9 @@ public class TFLiteUtils {
         int minute = calendar.get(Calendar.MINUTE);
         int vacation = 0, holiday = 0;
 
-        int startingTime = getClosestTime(schedule, hour * 100 + minute);
+        int startingTime;
         if (routeToStation.size() == 1) {
+            startingTime = getClosestTime(schedule, hour * 100 + minute, 0);
             return (startingTime / 100) + ":" + (startingTime % 100) + ":00";
         } else {
             float delay = 0;
@@ -105,6 +106,7 @@ public class TFLiteUtils {
             }
             int delayMinutes = Math.round(delay) / 60; // transform to minutes
             int delaySeconds = Math.round(delay) % 60; // transform to seconds
+            startingTime = getClosestTime(schedule, hour * 100 + minute, delayMinutes);
             Log.i(TFLiteUtils.class.getName(), "delaySec: " + delay + " delayM: " + delayMinutes + " delayS: " + delaySeconds);
             int startHour = startingTime / 100;
             int startMinutes = startingTime % 100;
@@ -117,15 +119,22 @@ public class TFLiteUtils {
         }
     }
 
-    private static int getClosestTime(List<Integer> schedule, int currentTime) {
+    private static int getClosestTime(List<Integer> schedule, int currentTime, int delayMinutes) {
+        // order ascending
         Collections.sort(schedule, new Comparator<Integer>() {
             @Override
             public int compare(Integer a, Integer b) {
-                return a > b ? -1 : a < b ? +1 : 0;
+                return a > b ? 1 : a < b ? -1 : 0;
             }
         });
         for (Integer integer : schedule) {
-            if (integer <= currentTime) {
+            int dHour = integer / 100;
+            int dMinutes = integer % 100 + delayMinutes;
+            if (dMinutes % 60 != dMinutes) {
+                dMinutes = dMinutes % 60;
+                dHour++;
+            }
+            if (dHour * 100 + dMinutes >= currentTime) {
                 return integer;
             }
         }
