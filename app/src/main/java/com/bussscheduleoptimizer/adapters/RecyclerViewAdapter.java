@@ -59,22 +59,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             public void onClick(View view) {
                 Log.d(TAG, "onClick: clicked on: arrived");
                 Toast.makeText(mContext, "arrived", Toast.LENGTH_SHORT).show();
-                FirebaseFirestore db = FirebaseFirestore.getInstance();
-                // 24
-                DocumentReference ref = db.collection("route").document("24");
-                addSchedule1(3, ref);
-                DocumentReference ref2 = db.collection("route").document("24");
-                addSchedule2(3, ref2);
-                //48
-                DocumentReference ref3 = db.collection("route").document("48");
-                addSchedule1(6, ref3);
-                DocumentReference ref4 = db.collection("route").document("48");
-                addSchedule2(6, ref4);
-                //4
-                DocumentReference ref5 = db.collection("route").document("4");
-                addSchedule1(10, ref5);
-                DocumentReference ref6 = db.collection("route").document("4");
-                addSchedule2(10, ref6);
             }
         });
         viewHolder.parentLayout.setOnClickListener(new View.OnClickListener() {
@@ -85,23 +69,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             }
         });
 
-    }
-
-    private void addSchedule1(int time, DocumentReference ref) {
-        for (int hour = 6; hour < 23; hour++) {
-            for (int minute = 0; minute < 60; minute +=time) {
-                int result = hour * 100 + minute;
-                ref.update("schedule1", FieldValue.arrayUnion(result));
-            }
-        }
-    }
-    private void addSchedule2(int time, DocumentReference ref) {
-        for (int hour = 6; hour < 23; hour++) {
-            for (int minute = 0; minute < 60; minute +=time) {
-                int result = hour * 100 + minute;
-                ref.update("schedule2", FieldValue.arrayUnion(result));
-            }
-        }
     }
 
     @Override
