@@ -8,13 +8,15 @@ public class Result {
     List<Integer> routeToStation;
     String delay;
     List<Integer> completeRoute;
+    int stationId;
 
-    public Result(String busId, VehicleType vehicleType, List<Integer> routeToStation, String delay, List<Integer> completeRoute) {
+    public Result(String busId, VehicleType vehicleType, List<Integer> routeToStation, String delay, List<Integer> completeRoute, int stationId) {
         this.busId = busId;
         this.vehicleType = vehicleType;
         this.routeToStation = routeToStation;
         this.delay = delay;
         this.completeRoute = completeRoute;
+        this.stationId = stationId;
     }
 
     public String getBusId() {
@@ -55,5 +57,13 @@ public class Result {
 
     public void setCompleteRoute(List<Integer> completeRoute) {
         this.completeRoute = completeRoute;
+    }
+
+    public int getStationId() {
+        return stationId;
+    }
+
+    public void setStationId(int stationId) {
+        this.stationId = stationId;
     }
 }

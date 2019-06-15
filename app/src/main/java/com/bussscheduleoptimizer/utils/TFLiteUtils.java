@@ -74,24 +74,19 @@ public class TFLiteUtils {
     }
 
     public static String interpret(Integer vehicleTypeId, List<Integer> routeToStation, List<Integer> schedule) {
-        float temperature = weather.getTemperature(Weather.CELSIUS); // maybe round to int??
-        int condition = 1;
-        int[] conditions = weather.getConditions();
-        if (conditions.length > 0) {
-            condition = conditions[0];
-        }
-        condition = convertCondition(condition);
+        float temperature = FeatureUtils.getTemperature();
+        int condition = FeatureUtils.getConditions();
+
         Date currentDate = new Date(System.currentTimeMillis());
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentDate);
-        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
-        if (dayOfWeek == 0) {
-            dayOfWeek = 7;
-        }
-        int month = calendar.get(Calendar.MONTH);
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
-        int vacation = 0, holiday = 0;
+
+        int dayOfWeek = FeatureUtils.getDayOfWeek(calendar);
+        int month = FeatureUtils.getMonth(calendar);
+        int hour = FeatureUtils.getHour(calendar);
+        int minute = FeatureUtils.getMinute(calendar);
+        int vacation = FeatureUtils.getVacation(calendar);
+        int holiday = FeatureUtils.getHoliday(calendar);
 
         int startingTime;
         if (routeToStation.size() == 1) {
@@ -141,30 +136,5 @@ public class TFLiteUtils {
         return 600;
     }
 
-    private static int convertCondition(int condition) {
-        switch (condition) {
-            case Weather.CONDITION_CLEAR:
-                return PrecipitationType.DRY.getId();
-            case Weather.CONDITION_CLOUDY:
-                return PrecipitationType.RAIN.getId();
-            case Weather.CONDITION_FOGGY:
-                return PrecipitationType.RAIN.getId();
-            case Weather.CONDITION_HAZY:
-                return PrecipitationType.DRY.getId();
-            case Weather.CONDITION_ICY:
-                return PrecipitationType.SNOW.getId();
-            case Weather.CONDITION_RAINY:
-                return PrecipitationType.RAIN.getId();
-            case Weather.CONDITION_SNOWY:
-                return PrecipitationType.SNOW.getId();
-            case Weather.CONDITION_STORMY:
-                return PrecipitationType.RAIN.getId();
-            case Weather.CONDITION_UNKNOWN:
-                return PrecipitationType.DRY.getId();
-            case Weather.CONDITION_WINDY:
-                return PrecipitationType.DRY.getId();
-            default:
-                return 1;
-        }
-    }
+
 }

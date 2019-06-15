@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.bussscheduleoptimizer.DirectionsCalculator;
 import com.bussscheduleoptimizer.R;
+import com.bussscheduleoptimizer.impl.ArriveListener;
 import com.bussscheduleoptimizer.model.Result;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -54,13 +55,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         viewHolder.image.setImageResource(result.getVehicleType().getIconId());
         viewHolder.buss.setText(result.getBusId());
         viewHolder.delay.setText(result.getDelay());
-        viewHolder.arriveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d(TAG, "onClick: clicked on: arrived");
-                Toast.makeText(mContext, "arrived", Toast.LENGTH_SHORT).show();
-            }
-        });
+        ArriveListener arriveListener = new ArriveListener(mContext, result.getBusId(), result.getVehicleType(), result.getStationId());
+        viewHolder.arriveButton.setOnClickListener(arriveListener);
         viewHolder.parentLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

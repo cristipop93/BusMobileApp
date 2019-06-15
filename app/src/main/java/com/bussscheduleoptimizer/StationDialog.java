@@ -57,7 +57,7 @@ public class StationDialog {
                                             .append(": ")
                                             .append(inferenceResult)
                                             .append("\n");
-                                    results.add(new Result(document.getId(), VehicleType.getById(route.getVehicleTypeId()), routeToStation, inferenceResult, completeRoute));
+                                    results.add(new Result(document.getId(), VehicleType.getById(route.getVehicleTypeId()), routeToStation, inferenceResult, completeRoute, stationId));
 
                                 }
                             }
