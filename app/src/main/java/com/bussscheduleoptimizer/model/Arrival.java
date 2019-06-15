@@ -5,7 +5,7 @@ import com.google.firebase.firestore.IgnoreExtraProperties;
 import java.util.Date;
 
 @IgnoreExtraProperties
-public class Arrivals {
+public class Arrival {
     int stationId;
     String busId;
     int vehicleType;
@@ -15,7 +15,7 @@ public class Arrivals {
     Date completeDate;
     int crowdedLevel;
 
-    public Arrivals(int stationId, String busId, int vehicleType, float temperature, int condition, int vacation, int holiday, Date completeDate, int crowdedLevel) {
+    public Arrival(int stationId, String busId, int vehicleType, float temperature, int condition, int vacation, int holiday, Date completeDate, int crowdedLevel) {
         this.stationId = stationId;
         this.busId = busId;
         this.vehicleType = vehicleType;

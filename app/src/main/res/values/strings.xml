@@ -7,4 +7,7 @@
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
+    <string name="crowded_message">How croded is the vehicle?</string>
+    <string name="submitRate">Submit</string>
+    <string name="rateAdded">Thank you for your contribution.</string>
 </resources>

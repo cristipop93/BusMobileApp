@@ -5,7 +5,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.bussscheduleoptimizer.model.Arrivals;
+import com.bussscheduleoptimizer.model.Arrival;
 import com.bussscheduleoptimizer.model.VehicleType;
 import com.bussscheduleoptimizer.utils.FeatureUtils;
 import com.google.firebase.firestore.DocumentReference;
@@ -33,9 +33,6 @@ public class ArriveListener implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         Log.d(TAG, "onClick: clicked on:" + busId + " arrived");
-        Toast.makeText(context, "arrived", Toast.LENGTH_SHORT).show();
-
-        int crowdedLevel = 2;
 
         Date currentDate = new Date(System.currentTimeMillis());
         Calendar calendar = Calendar.getInstance();
@@ -45,16 +42,12 @@ public class ArriveListener implements View.OnClickListener {
         int holiday = FeatureUtils.getHoliday(calendar);
         int vacation = FeatureUtils.getVacation(calendar);
 
-        Arrivals arrival = new Arrivals(stationId, busId, vehicleType.getIconId(), temperature, condition, vacation, holiday, currentDate, crowdedLevel);
-        storeArrival(arrival);
+        Arrival arrival = new Arrival(stationId, busId, vehicleType.getIconId(), temperature, condition, vacation, holiday, currentDate, 0);
 
+        RateDialog rateDialog = new RateDialog(context, arrival);
+        rateDialog.show();
 //        createSchedule();
 
-    }
-
-    private void storeArrival(Arrivals arrival) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("arrival").add(arrival);
     }
 
     private void createSchedule() {
