@@ -294,7 +294,9 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
 
     @Override
     public void onMapClick(LatLng latLng) {
-        expandMapAnimation();
+        if (mMapLayoutState == MAP_LAYOUT_STATE_CONTRACTED) {
+            expandMapAnimation();
+        }
         removeExistingPolyLines();
     }
 
