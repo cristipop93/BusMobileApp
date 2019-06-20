@@ -11,17 +11,11 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bussscheduleoptimizer.DirectionsCalculator;
 import com.bussscheduleoptimizer.R;
 import com.bussscheduleoptimizer.impl.ArriveListener;
 import com.bussscheduleoptimizer.model.Result;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
@@ -29,7 +23,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     private static final String TAG = "RecyclerViewAdapter";
 
-    private ArrayList<Result> mResults = new ArrayList<>();
+    private ArrayList<Result> mResults;
     private Context mContext;
     private DirectionsCalculator directionsCalculator;
 
@@ -57,12 +51,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         viewHolder.delay.setText(result.getDelay());
         ArriveListener arriveListener = new ArriveListener(mContext, result.getBusId(), result.getVehicleType(), result.getStationId());
         viewHolder.arriveButton.setOnClickListener(arriveListener);
-        viewHolder.parentLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d(TAG, "onClick: parentLayout: " + result.getBusId());
-                directionsCalculator.calculateDirections(result.getCompleteRoute());
-            }
+        viewHolder.parentLayout.setOnClickListener(view -> {
+            Log.d(TAG, "onClick: parentLayout: " + result.getBusId());
+            directionsCalculator.calculateDirections(result.getCompleteRoute());
         });
 
     }

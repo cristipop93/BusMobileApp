@@ -2,6 +2,7 @@ package com.bussscheduleoptimizer;
 
 import android.Manifest;
 import android.animation.ObjectAnimator;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -18,7 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.bussscheduleoptimizer.model.Station;
 import com.bussscheduleoptimizer.utils.LocationUtils;
@@ -82,13 +82,19 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
     Location mLastKnownLocation;
     View myView;
     GeoApiContext mGeoApiContext = null;
+    private Context context;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         myView = inflater.inflate(R.layout.map_page, container, false);
+        if (getActivity() != null) {
+            this.context = getActivity().getApplicationContext();
+        } else {
+            return myView;
+        }
         // check location permission
-        if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(),
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSION_REQUEST_ACCESS_FINE_LOCATION);
@@ -96,7 +102,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
             mLocationPermissionsGranted = true;
         }
         getWeatherInfo();
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity().getApplicationContext());
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context);
 
         MapView mMapView = (MapView) myView.findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
@@ -106,7 +112,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
         mapContainer = myView.findViewById(R.id.map_container);
 
         try {
-            MapsInitializer.initialize(getActivity().getApplicationContext());
+            MapsInitializer.initialize(context);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -122,7 +128,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
                 map.getUiSettings().setCompassEnabled(true);
                 map.getUiSettings().setZoomControlsEnabled(true);
                 if (mLocationPermissionsGranted) {
-                    if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         mLastKnownLocation = null;
                         return;
                     }
@@ -246,8 +252,8 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
 
 
     private void getWeatherInfo() {
-        if (!(ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
-            Awareness.getSnapshotClient(getActivity().getApplicationContext()).getWeather().addOnCompleteListener(new OnCompleteListener<WeatherResponse>() {
+        if (!(ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+            Awareness.getSnapshotClient(context).getWeather().addOnCompleteListener(new OnCompleteListener<WeatherResponse>() {
                 @Override
                 public void onComplete(@NonNull Task<WeatherResponse> task) {
                     if (task.isSuccessful()) {
@@ -286,7 +292,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
         if (selectedStation == null || stationId == null) {
             return false;
         }
-        StationDialog.showDialog(selectedStation, stationId, myView, this);
+        RouteCalculator.getEstimation(selectedStation, stationId, myView, this);
         if (mMapLayoutState == MAP_LAYOUT_STATE_EXPANDED)
             contractMapAnimation();
         return false;
@@ -308,21 +314,18 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
         try {
             if (mLocationPermissionsGranted) {
                 Task locationResult = mFusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener() {
-                    @Override
-                    public void onComplete(@NonNull Task task) {
-                        if (task.isSuccessful() && LocationUtils.isLocationServiceEnabled(getActivity().getApplicationContext()) && task.getResult() != null) {
-                            // Set the map's camera position to the current location of the device.
-                            mLastKnownLocation = (Location) task.getResult();
-                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                    new LatLng(mLastKnownLocation.getLatitude(),
-                                            mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
-                        } else {
-                            Log.d(TAG, "Current location is null. Using defaults.");
-                            Log.e(TAG, "Exception: %s", task.getException());
-                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
-                            map.getUiSettings().setMyLocationButtonEnabled(true);
-                        }
+                locationResult.addOnCompleteListener(getActivity(), task -> {
+                    if (task.isSuccessful() && LocationUtils.isLocationServiceEnabled(context) && task.getResult() != null) {
+                        // Set the map's camera position to the current location of the device.
+                        mLastKnownLocation = (Location) task.getResult();
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                new LatLng(mLastKnownLocation.getLatitude(),
+                                        mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                    } else {
+                        Log.d(TAG, "Current location is null. Using defaults.");
+                        Log.e(TAG, "Exception: %s", task.getException());
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
+                        map.getUiSettings().setMyLocationButtonEnabled(true);
                     }
                 });
             }

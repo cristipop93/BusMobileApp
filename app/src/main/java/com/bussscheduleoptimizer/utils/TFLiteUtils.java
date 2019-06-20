@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.bussscheduleoptimizer.MainActivity.tflite;
-import static com.bussscheduleoptimizer.MapFragment.weather;
 
 public class TFLiteUtils {
 
@@ -116,12 +115,7 @@ public class TFLiteUtils {
 
     private static int getClosestTime(List<Integer> schedule, int currentTime, int delayMinutes) {
         // order ascending
-        Collections.sort(schedule, new Comparator<Integer>() {
-            @Override
-            public int compare(Integer a, Integer b) {
-                return a > b ? 1 : a < b ? -1 : 0;
-            }
-        });
+        Collections.sort(schedule, (a, b) -> a > b ? 1 : a < b ? -1 : 0);
         for (Integer integer : schedule) {
             int dHour = integer / 100;
             int dMinutes = integer % 100 + delayMinutes;
