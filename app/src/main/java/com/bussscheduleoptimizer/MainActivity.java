@@ -1,8 +1,9 @@
 package com.bussscheduleoptimizer;
 
-import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -12,17 +13,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.bussscheduleoptimizer.utils.TFLiteUtils;
-import com.google.android.gms.awareness.state.Weather;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.LatLng;
 
 import org.tensorflow.lite.Interpreter;
 
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener  {
+        implements NavigationView.OnNavigationItemSelectedListener {
 
     public static Interpreter tflite;
     NavigationView navigationView;
@@ -78,7 +75,7 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    private void navigateToFragment(int fragmentId) {
+    public void navigateToFragment(int fragmentId) {
         if (fragmentId == R.id.map_page) {
             MapFragment mapFragment = new MapFragment();
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();

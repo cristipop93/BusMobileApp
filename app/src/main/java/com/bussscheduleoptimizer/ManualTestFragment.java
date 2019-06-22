@@ -23,15 +23,17 @@ import com.bussscheduleoptimizer.model.PrecipitationType;
 import com.bussscheduleoptimizer.model.VehicleType;
 import com.bussscheduleoptimizer.utils.TFLiteUtils;
 
-import java.util.Arrays;
-
 public class ManualTestFragment extends Fragment {
+    public static final String TAG = "ManualTestFragment";
+
     View myView;
     EditText hour, minute, temperature;
     Spinner vehicleType, month, day, pType;
     Switch holiday, vacation;
     Button button, reset;
-    public static final String TAG = "ManualTestFragment";
+
+    public ManualTestFragment() {
+    }
 
     @Nullable
     @Override
@@ -95,6 +97,7 @@ public class ManualTestFragment extends Fragment {
                         + " Temperature: " + TFLiteUtils.s_temperature
                         + " Precipitation: " + TFLiteUtils.s_pType);
                 Toast.makeText(getActivity().getApplicationContext(), "Using test data", Toast.LENGTH_SHORT).show();
+                ((MainActivity) getActivity()).navigateToFragment(R.id.map_page);
                 hideSoftKeyboard(getActivity());
             }
         });
@@ -103,6 +106,7 @@ public class ManualTestFragment extends Fragment {
             public void onClick(View view) {
                 TFLiteUtils.useTestData = false;
                 Toast.makeText(getActivity().getApplicationContext(), "Using real data", Toast.LENGTH_SHORT).show();
+                ((MainActivity) getActivity()).navigateToFragment(R.id.map_page);
                 hideSoftKeyboard(getActivity());
             }
         });
