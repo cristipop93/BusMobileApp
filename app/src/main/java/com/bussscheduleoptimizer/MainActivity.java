@@ -74,12 +74,17 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.map_page) {
+        navigateToFragment(id);
+        return true;
+    }
+
+    private void navigateToFragment(int fragmentId) {
+        if (fragmentId == R.id.map_page) {
             MapFragment mapFragment = new MapFragment();
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.fragment_container, mapFragment);
             fragmentTransaction.commit();
-        } else if (id == R.id.manual_test_page) {
+        } else if (fragmentId == R.id.manual_test_page) {
             ManualTestFragment manualTestFragment = new ManualTestFragment();
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.fragment_container, manualTestFragment);
@@ -88,6 +93,5 @@ public class MainActivity extends AppCompatActivity
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
-        return true;
     }
 }

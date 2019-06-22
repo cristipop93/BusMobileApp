@@ -10,4 +10,6 @@
     <string name="crowded_message">How crowded is the vehicle?</string>
     <string name="submitRate">Submit</string>
     <string name="rateAdded">Thank you for your contribution.</string>
+    <string name="manual_mode">Manual Settings</string>
+    <string name="map_mode">Map</string>
 </resources>

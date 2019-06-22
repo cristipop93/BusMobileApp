@@ -13,95 +13,190 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingLeft="20dp"
+            android:paddingTop="20dp"
+            android:paddingRight="20dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Vehicle Type"
+                    android:textSize="16dp"
+                    android:paddingRight="10dp"
+                    android:layout_centerVertical="true"/>
+                <Spinner
+                    android:id="@+id/vehicleTypeSpinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    />
+            </RelativeLayout>
 
 
-            <EditText
-                android:id="@+id/editTextVehicleType"
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Month"
+                    android:textSize="16dp"
+                    android:paddingRight="10dp"
+                    android:layout_centerVertical="true"/>
+                <Spinner
+                    android:id="@+id/monthSpinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Day"
+                    android:textSize="16dp"
+                    android:paddingRight="10dp"
+                    android:layout_centerVertical="true"/>
+
+                <Spinner
+                    android:id="@+id/daySpinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hour"
+                    android:textSize="16dp"
+                    android:paddingRight="10dp"
+                    android:layout_centerVertical="true"/>
+                <EditText
+                    android:id="@+id/editTextHour"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:inputType="number"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Minute"
+                    android:textSize="16dp"
+                    android:paddingRight="10dp"
+                    android:layout_centerVertical="true"/>
+                <EditText
+                    android:id="@+id/editTextMinute"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:inputType="number"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"/>
+            </RelativeLayout>
+
+                <Switch
+                    android:id="@+id/holidaySwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Holiday"
+                    android:textSize="16dp"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"/>
+
+                <Switch
+                    android:id="@+id/vacationSwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Vacation"
+                    android:textSize="16dp"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Temperature"
+                    android:textSize="16dp"
+                    android:paddingRight="10dp"
+                    android:layout_centerVertical="true"/>
+                <EditText
+                    android:id="@+id/editTextTemperature"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:inputType="numberSigned"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"/>
+            </RelativeLayout>
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Precipitation"
+                    android:textSize="16dp"
+                    android:paddingRight="10dp"
+                    android:layout_centerVertical="true"/>
+
+                <Spinner
+                    android:id="@+id/precipitationSpinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    />
+            </RelativeLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="0 - Buss; 1- Trolley; 2 - Tram"
-                android:inputType="number" />
+                android:orientation="horizontal">
 
-            <EditText
-                android:id="@+id/editTextMonth"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="Month"
-                android:inputType="number" />
+                <Button
+                    android:id="@+id/button"
+                    android:layout_width="152dp"
+                    android:layout_height="wrap_content"
+                    android:text="Button" />
 
-            <EditText
-                android:id="@+id/editTextDay"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="Day"
-                android:inputType="number" />
-
-            <EditText
-                android:id="@+id/editTextHour"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="Hour"
-                android:inputType="number" />
-
-            <EditText
-                android:id="@+id/editTextMinute"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="Minute"
-                android:inputType="number" />
-
-            <EditText
-                android:id="@+id/editTextHoliday"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="Holiday 1 = true; 0 = false"
-                android:inputType="number" />
-
-            <EditText
-                android:id="@+id/editTextVacation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="Vacation 1 = true; 0 = false"
-                android:inputType="number" />
-
-            <EditText
-                android:id="@+id/editTextTemperature"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="Temperature"
-                android:inputType="number" />
-
-            <EditText
-                android:id="@+id/editTextPType"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="PType 0 = dry; 1 = rain; 2 = snow"
-                android:inputType="number" />
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <Button
-                android:id="@+id/button"
-                android:layout_width="152dp"
-                android:layout_height="wrap_content"
-                android:text="Button" />
-            <Button
-                android:id="@+id/reset"
-                android:layout_width="152dp"
-                android:layout_height="wrap_content"
-                android:text="Reset" />
-        </LinearLayout>
+                <Button
+                    android:id="@+id/reset"
+                    android:layout_width="152dp"
+                    android:layout_height="wrap_content"
+                    android:text="Reset" />
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 </RelativeLayout>

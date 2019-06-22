@@ -101,6 +101,7 @@ public class TFLiteUtils {
             int delayMinutes = Math.round(delay) / 60; // transform to minutes
             int delaySeconds = Math.round(delay) % 60; // transform to seconds
             startingTime = getClosestTime(schedule, hour * 100 + minute, delayMinutes);
+            // getClosestTime with closest time from db for that route
             Log.i(TFLiteUtils.class.getName(), "delaySec: " + delay + " delayM: " + delayMinutes + " delayS: " + delaySeconds);
             int startHour = startingTime / 100;
             int startMinutes = startingTime % 100;
