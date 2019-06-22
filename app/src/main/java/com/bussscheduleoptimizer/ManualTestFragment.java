@@ -69,6 +69,7 @@ public class ManualTestFragment extends Fragment {
         pType.setAdapter(pTypeAdapter);
         button = myView.findViewById(R.id.button);
         reset = myView.findViewById(R.id.reset);
+        setInputValues();
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,6 +112,21 @@ public class ManualTestFragment extends Fragment {
             }
         });
         return myView;
+    }
+
+    private void setInputValues() {
+        if (!TFLiteUtils.useTestData) {
+            return;
+        }
+        vehicleType.setSelection((int) TFLiteUtils.s_vehicleType);
+        month.setSelection((int) TFLiteUtils.s_month - 1);
+        day.setSelection((int) TFLiteUtils.s_day - 1);
+        hour.setText(((int) TFLiteUtils.s_hour) + "");
+        minute.setText(((int) TFLiteUtils.s_minute) + "");
+        holiday.setChecked(TFLiteUtils.s_holiday == 1);
+        vacation.setChecked(TFLiteUtils.s_vacation == 1);
+        temperature.setText(((int) TFLiteUtils.s_temperature) + "");
+        pType.setSelection((int) TFLiteUtils.s_pType);
     }
 
     private boolean isValidInput() {
