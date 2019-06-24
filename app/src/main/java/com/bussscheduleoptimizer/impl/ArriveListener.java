@@ -38,9 +38,9 @@ public class ArriveListener implements View.OnClickListener {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentDate);
         float temperature = FeatureUtils.getTemperature();
-        int condition = FeatureUtils.getConditions();
-        int holiday = FeatureUtils.getHoliday(calendar);
-        int vacation = FeatureUtils.getVacation(calendar);
+        float condition = FeatureUtils.getConditions();
+        float holiday = FeatureUtils.getHoliday(calendar);
+        float vacation = FeatureUtils.getVacation(calendar);
 
         Arrival arrival = new Arrival(stationId, busId, vehicleType.getIconId(), temperature, condition, vacation, holiday, currentDate, 0);
 

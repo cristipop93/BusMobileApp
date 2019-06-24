@@ -9,10 +9,16 @@ import static com.bussscheduleoptimizer.MapFragment.weather;
 
 public class FeatureUtils {
     public static float getTemperature() {
+        if (TFLiteUtils.useTestData) {
+            return TFLiteUtils.s_temperature;
+        }
         return weather.getTemperature(Weather.CELSIUS);
     }
 
-    public static int getConditions() {
+    public static float getConditions() {
+        if (TFLiteUtils.useTestData) {
+            return TFLiteUtils.s_pType;
+        }
         int condition = 1;
         int[] conditions = weather.getConditions();
         if (conditions.length > 0) {
@@ -20,7 +26,7 @@ public class FeatureUtils {
         }
         return convertCondition(condition);
     }
-    private static int convertCondition(int condition) {
+    private static float convertCondition(int condition) {
         switch (condition) {
             case Weather.CONDITION_CLEAR:
                 return PrecipitationType.DRY.getId();
@@ -47,7 +53,10 @@ public class FeatureUtils {
         }
     }
 
-    public static int getDayOfWeek(Calendar calendar) {
+    public static float getDayOfWeek(Calendar calendar) {
+        if (TFLiteUtils.useTestData) {
+            return TFLiteUtils.s_day;
+        }
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
         if (dayOfWeek == 0) {
             dayOfWeek = 7;
@@ -55,23 +64,45 @@ public class FeatureUtils {
         return dayOfWeek;
     }
 
-    public static int getMonth(Calendar calendar) {
+    public static float getMonth(Calendar calendar) {
+        if (TFLiteUtils.useTestData) {
+            return TFLiteUtils.s_month;
+        }
         return calendar.get(Calendar.MONTH);
     }
 
-    public static int getHour(Calendar calendar) {
+    public static float getHour(Calendar calendar) {
+        if (TFLiteUtils.useTestData) {
+            return TFLiteUtils.s_hour;
+        }
         return calendar.get(Calendar.HOUR_OF_DAY);
     }
 
-    public static int getMinute(Calendar calendar) {
+    public static float getMinute(Calendar calendar) {
+        if (TFLiteUtils.useTestData) {
+            return TFLiteUtils.s_minute;
+        }
         return calendar.get(Calendar.MINUTE);
     }
 
-    public static int getVacation(Calendar calendar) {
+    public static float getVacation(Calendar calendar) {
+        if (TFLiteUtils.useTestData) {
+            return TFLiteUtils.s_vacation;
+        }
         return 0;
     }
 
-    public static int getHoliday(Calendar calendar) {
+    public static float getHoliday(Calendar calendar) {
+        if (TFLiteUtils.useTestData) {
+            return TFLiteUtils.s_holiday;
+        }
         return 0;
+    }
+
+    public static float getVehicleTypeId(int vehicleTypeId) {
+        if (TFLiteUtils.useTestData) {
+            return TFLiteUtils.s_vehicleType;
+        }
+        return vehicleTypeId;
     }
 }

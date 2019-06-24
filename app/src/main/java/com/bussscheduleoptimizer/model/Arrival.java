@@ -10,12 +10,13 @@ public class Arrival {
     String busId;
     int vehicleType;
     float temperature;
-    int condition;
-    int vacation, holiday;
+    float condition;
+    float vacation;
+    float holiday;
     Date completeDate;
     int crowdedLevel;
 
-    public Arrival(int stationId, String busId, int vehicleType, float temperature, int condition, int vacation, int holiday, Date completeDate, int crowdedLevel) {
+    public Arrival(int stationId, String busId, int vehicleType, float temperature, float condition, float vacation, float holiday, Date completeDate, int crowdedLevel) {
         this.stationId = stationId;
         this.busId = busId;
         this.vehicleType = vehicleType;
@@ -59,27 +60,27 @@ public class Arrival {
         this.temperature = temperature;
     }
 
-    public int getCondition() {
+    public float getCondition() {
         return condition;
     }
 
-    public void setCondition(int condition) {
+    public void setCondition(float condition) {
         this.condition = condition;
     }
 
-    public int isVacation() {
+    public float isVacation() {
         return vacation;
     }
 
-    public void setVacation(int vacation) {
+    public void setVacation(float vacation) {
         this.vacation = vacation;
     }
 
-    public int isHoliday() {
+    public float isHoliday() {
         return holiday;
     }
 
-    public void setHoliday(int holiday) {
+    public void setHoliday(float holiday) {
         this.holiday = holiday;
     }
 

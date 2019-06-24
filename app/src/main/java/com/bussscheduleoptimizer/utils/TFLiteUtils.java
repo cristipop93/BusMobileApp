@@ -40,17 +40,6 @@ public class TFLiteUtils {
     public static float doInference(float idFrom, float idTo, float vehicleType, float month, float day, float hour, float minute, float holiday, float vacation, float temperature, float pType) {
         Log.i(TFLiteUtils.class.getName(), "from: " + idFrom + " to: " + idTo + " vehicleType: " + vehicleType + " month: " + month + " day: " + day + " hour: " + hour + " minute: " + minute + " holiday: " + holiday + " vacation: " + vacation + " temp: " + temperature + " pType: " + pType);
         Object[] inputVals = new Object[11];
-        if (useTestData) {
-            vehicleType = s_vehicleType;
-            month = s_month;
-            day = s_day;
-            hour = s_hour;
-            minute = s_minute;
-            holiday = s_holiday;
-            vacation = s_vacation;
-            temperature = s_temperature;
-            pType = s_pType;
-        }
         inputVals[0] = new float[]{day};
         inputVals[1] = new float[]{holiday};
         inputVals[2] = new float[]{hour};
@@ -74,33 +63,34 @@ public class TFLiteUtils {
 
     public static String interpret(Integer vehicleTypeId, List<Integer> routeToStation, List<Integer> schedule) {
         float temperature = FeatureUtils.getTemperature();
-        int condition = FeatureUtils.getConditions();
+        float condition = FeatureUtils.getConditions();
 
         Date currentDate = new Date(System.currentTimeMillis());
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentDate);
 
-        int dayOfWeek = FeatureUtils.getDayOfWeek(calendar);
-        int month = FeatureUtils.getMonth(calendar);
-        int hour = FeatureUtils.getHour(calendar);
-        int minute = FeatureUtils.getMinute(calendar);
-        int vacation = FeatureUtils.getVacation(calendar);
-        int holiday = FeatureUtils.getHoliday(calendar);
+        float dayOfWeek = FeatureUtils.getDayOfWeek(calendar);
+        float month = FeatureUtils.getMonth(calendar);
+        float hour = FeatureUtils.getHour(calendar);
+        float minute = FeatureUtils.getMinute(calendar);
+        float vacation = FeatureUtils.getVacation(calendar);
+        float holiday = FeatureUtils.getHoliday(calendar);
+        float vehicleType = FeatureUtils.getVehicleTypeId(vehicleTypeId);
 
         int startingTime;
         if (routeToStation.size() == 1) {
-            startingTime = getClosestTime(schedule, hour * 100 + minute, 0);
+            startingTime = getClosestTime(schedule, (int) (hour * 100 + minute), 0);
             return (startingTime / 100) + ":" + (startingTime % 100) + ":00";
         } else {
             float delay = 0;
             int station = routeToStation.get(0);
             for (int i = 1; i < routeToStation.size(); i++) {
-                delay += doInference(station, routeToStation.get(i), vehicleTypeId, month, dayOfWeek, hour, minute, holiday, vacation, temperature, condition);
+                delay += doInference(station, routeToStation.get(i), vehicleType, month, dayOfWeek, hour, minute, holiday, vacation, temperature, condition);
                 station = routeToStation.get(i);
             }
             int delayMinutes = Math.round(delay) / 60; // transform to minutes
             int delaySeconds = Math.round(delay) % 60; // transform to seconds
-            startingTime = getClosestTime(schedule, hour * 100 + minute, delayMinutes);
+            startingTime = getClosestTime(schedule, (int) (hour * 100 + minute), delayMinutes);
             // getClosestTime with closest time from db for that route
             Log.i(TFLiteUtils.class.getName(), "delaySec: " + delay + " delayM: " + delayMinutes + " delayS: " + delaySeconds);
             int startHour = startingTime / 100;
