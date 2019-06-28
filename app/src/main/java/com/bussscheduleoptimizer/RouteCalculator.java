@@ -6,20 +6,28 @@ import android.util.Log;
 import android.view.View;
 
 import com.bussscheduleoptimizer.adapters.RecyclerViewAdapter;
+import com.bussscheduleoptimizer.model.Arrival;
 import com.bussscheduleoptimizer.model.Result;
 import com.bussscheduleoptimizer.model.Route;
 import com.bussscheduleoptimizer.model.Station;
 import com.bussscheduleoptimizer.model.VehicleType;
+import com.bussscheduleoptimizer.utils.FeatureUtils;
 import com.bussscheduleoptimizer.utils.TFLiteUtils;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public class RouteCalculator {
     private static final String TAG = "RouteCalculator";
+    private static RecyclerViewAdapter adapter;
 
     public static void getEstimation(Station station, String stationId, View view, DirectionsCalculator directionsCalculator) {
 
@@ -32,18 +40,43 @@ public class RouteCalculator {
             if (task.isSuccessful()) {
                 if (task.getResult() != null) {
                     ArrayList<Result> results = new ArrayList<>();
+                    adapter = initRecyclerView(view, results, directionsCalculator);
                     for (DocumentSnapshot document : task.getResult().getDocuments()) {
                         if (busses.contains(Integer.parseInt(document.getId()))) {
                             Route route = document.toObject(Route.class);
                             if (route != null) {
                                 List<Integer> routeToStation = getRouteToStation(stationId, route);
                                 List<Integer> completeRoute = getCompleteRoute(stationId, route);
-                                String inferenceResult = TFLiteUtils.interpret(route.getVehicleTypeId(), routeToStation, getSchedule(stationId, route));
-                                results.add(new Result(document.getId(), VehicleType.getById(route.getVehicleTypeId()), routeToStation, inferenceResult, completeRoute, stationId));
+                                String inferenceResult = "";
+                                //getLastSeen only if live data and there are multiple stations ( > 1 || > 2)
+                                if (routeToStation.size() == 1) {
+                                    Calendar calendar = Calendar.getInstance();
+                                    calendar.setTime(new Date());
+                                    float hour = FeatureUtils.getHour(calendar);
+                                    float minute = FeatureUtils.getMinute(calendar);
+                                    int startingTime = TFLiteUtils.getClosestTime(getSchedule(stationId, route), (int) (hour * 100 + minute), 0);
+                                    inferenceResult =  (startingTime / 100) + ":" + (startingTime % 100) + ":00";
+                                    Result res = new Result(document.getId(), VehicleType.getById(route.getVehicleTypeId()), routeToStation, inferenceResult, completeRoute, stationId);
+                                    adapter.addResult(res);
+                                    adapter.notifyDataSetChanged();
+                                } else {
+                                    if (!TFLiteUtils.useTestData) {
+                                        getLastSeenTime(routeToStation, document.getId(), route.getVehicleTypeId(), getSchedule(stationId, route), inferenceResult, completeRoute, stationId);
+                                    } else {
+                                        // normal flow;
+                                        inferenceResult = TFLiteUtils.interpret(route.getVehicleTypeId(), routeToStation, getSchedule(stationId, route));
+                                        Result res = new Result(document.getId(), VehicleType.getById(route.getVehicleTypeId()), routeToStation, inferenceResult, completeRoute, stationId);
+                                        adapter.addResult(res);
+                                        adapter.notifyDataSetChanged();
+                                    }
+                                }
+
+
                             }
                         }
                     }
-                    initRecyclerView(view, results, directionsCalculator);
+
+
                 }
             } else {
                 Log.e(RouteCalculator.class.getName(), "Query failed");
@@ -51,12 +84,100 @@ public class RouteCalculator {
         });
     }
 
-    private static void initRecyclerView(View view, ArrayList<Result> results, DirectionsCalculator directionsCalculator) {
+    private static void getLastSeenTime(List<Integer> routeToStation, String busId, int vehicleTypeId, List<Integer> schedule, String fromStart, List<Integer> completeRoute, int stationId) {
+        // -------- get delay from beginning to current station
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        float hour = FeatureUtils.getHour(calendar);
+        float minute = FeatureUtils.getMinute(calendar);
+
+        float delay = getDelay(vehicleTypeId, hour, minute, routeToStation);
+        // --------- get start time from beginning
+        int startingTime = getStartingTime(schedule, hour, minute, delay);
+        int startHour = startingTime / 100;
+        int startMinutes = startingTime % 100;
+        // -----------------------------------------
+        calendar.set(Calendar.HOUR_OF_DAY, startHour);
+        calendar.set(Calendar.MINUTE, startMinutes);
+        Date startDate = calendar.getTime();
+
+
+        // --------
+        Log.i("Arrival", "For bus " + busId + " searching for date greater than: " + startDate);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference arrivalReference = db.collection("arrival");
+        arrivalReference.whereGreaterThan("completeDate", startDate)
+                .whereEqualTo("busId", busId).orderBy("completeDate", Query.Direction.DESCENDING)
+                .get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                if (task.getResult() != null && !task.getResult().isEmpty()) {
+                    Arrival result = null;
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        Arrival arrival = document.toObject(Arrival.class);
+                        if (routeToStation.contains(arrival.getStationId()) && !routeToStation.get(routeToStation.size()-1).equals(arrival.getStationId())) {
+                            result = arrival;
+                            break;
+                        }
+                    }
+                    if (result != null) {
+                        List<Integer> newRouteToStation = routeToStation.subList(routeToStation.indexOf(result.getStationId()), routeToStation.size()-1);
+                        Log.i("newRoute", newRouteToStation.toString());
+                        float newDelay = getDelay(vehicleTypeId, hour, minute, newRouteToStation);
+                        Calendar newCalendar = Calendar.getInstance();
+                        newCalendar.setTime(result.getCompleteDate());
+                        int newHour = newCalendar.get(Calendar.HOUR_OF_DAY);
+                        int newMinute = newCalendar.get(Calendar.MINUTE);
+                        int newStartingTime = newHour * 100 + newMinute;
+                        String inferenceResult = TFLiteUtils.interpret(newStartingTime, newDelay);
+                        Result res = new Result(busId, VehicleType.getById(vehicleTypeId), newRouteToStation, inferenceResult, completeRoute, stationId);
+                        adapter.addResult(res);
+                        Log.i("Arrival", "last seen: " + result);
+
+                        adapter.notifyDataSetChanged();
+                    } else {
+                        // use normal flow
+                        String inferenceResult = TFLiteUtils.interpret(vehicleTypeId, routeToStation, schedule);
+                        Result res = new Result(busId, VehicleType.getById(vehicleTypeId), routeToStation, inferenceResult, completeRoute, stationId);
+                        adapter.addResult(res);
+                        adapter.notifyDataSetChanged();
+                    }
+                } else {
+                    // use normal flow
+                    String inferenceResult = TFLiteUtils.interpret(vehicleTypeId, routeToStation, schedule);
+                    Result res = new Result(busId, VehicleType.getById(vehicleTypeId), routeToStation, inferenceResult, completeRoute, stationId);
+                    adapter.addResult(res);
+                    adapter.notifyDataSetChanged();
+                }
+            }
+        });
+    }
+
+    public static float getDelay(int vehicleTypeId, float hour, float minute, List<Integer> routeToStation) {
+        float temperature = FeatureUtils.getTemperature();
+        float condition = FeatureUtils.getConditions();
+        Calendar calendar2 = Calendar.getInstance();
+        calendar2.setTime(new Date());
+        float dayOfWeek = FeatureUtils.getDayOfWeek(calendar2);
+        float month = FeatureUtils.getMonth(calendar2);
+        float vacation = FeatureUtils.getVacation(calendar2);
+        float holiday = FeatureUtils.getHoliday(calendar2);
+        float vehicleType = FeatureUtils.getVehicleTypeId(vehicleTypeId);
+        return TFLiteUtils.getDelay(routeToStation, hour, minute, temperature, condition, dayOfWeek, month, vacation, holiday, vehicleType);
+    }
+
+    public static int getStartingTime(List<Integer> schedule, float hour, float minute, float delay) {
+        int delayMinutes = Math.round(delay) / 60; // transform to minutes
+        int delaySeconds = Math.round(delay) % 60; // transform to seconds
+        return TFLiteUtils.getClosestTime(schedule, (int) (hour * 100 + minute), delayMinutes);
+    }
+
+    private static RecyclerViewAdapter initRecyclerView(View view, ArrayList<Result> results, DirectionsCalculator directionsCalculator) {
         Log.d(TAG, "initRecyclerView: init recyclerView");
         RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
         RecyclerViewAdapter adapter = new RecyclerViewAdapter(view.getContext(), results, directionsCalculator);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        return adapter;
 
     }
 

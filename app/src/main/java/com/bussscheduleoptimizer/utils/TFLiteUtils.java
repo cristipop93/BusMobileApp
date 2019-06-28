@@ -3,16 +3,28 @@ package com.bussscheduleoptimizer.utils;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.bussscheduleoptimizer.RouteCalculator;
+import com.bussscheduleoptimizer.model.Arrival;
 import com.bussscheduleoptimizer.model.PrecipitationType;
 import com.bussscheduleoptimizer.R;
+import com.bussscheduleoptimizer.model.Station;
 import com.google.android.gms.awareness.state.Weather;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -62,49 +74,41 @@ public class TFLiteUtils {
     }
 
     public static String interpret(Integer vehicleTypeId, List<Integer> routeToStation, List<Integer> schedule) {
-        float temperature = FeatureUtils.getTemperature();
-        float condition = FeatureUtils.getConditions();
-
-        Date currentDate = new Date(System.currentTimeMillis());
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(currentDate);
-
-        float dayOfWeek = FeatureUtils.getDayOfWeek(calendar);
-        float month = FeatureUtils.getMonth(calendar);
+        calendar.setTime(new Date());
         float hour = FeatureUtils.getHour(calendar);
         float minute = FeatureUtils.getMinute(calendar);
-        float vacation = FeatureUtils.getVacation(calendar);
-        float holiday = FeatureUtils.getHoliday(calendar);
-        float vehicleType = FeatureUtils.getVehicleTypeId(vehicleTypeId);
-
-        int startingTime;
-        if (routeToStation.size() == 1) {
-            startingTime = getClosestTime(schedule, (int) (hour * 100 + minute), 0);
-            return (startingTime / 100) + ":" + (startingTime % 100) + ":00";
-        } else {
-            float delay = 0;
-            int station = routeToStation.get(0);
-            for (int i = 1; i < routeToStation.size(); i++) {
-                delay += doInference(station, routeToStation.get(i), vehicleType, month, dayOfWeek, hour, minute, holiday, vacation, temperature, condition);
-                station = routeToStation.get(i);
-            }
-            int delayMinutes = Math.round(delay) / 60; // transform to minutes
-            int delaySeconds = Math.round(delay) % 60; // transform to seconds
-            startingTime = getClosestTime(schedule, (int) (hour * 100 + minute), delayMinutes);
-            // getClosestTime with closest time from db for that route
-            Log.i(TFLiteUtils.class.getName(), "delaySec: " + delay + " delayM: " + delayMinutes + " delayS: " + delaySeconds);
-            int startHour = startingTime / 100;
-            int startMinutes = startingTime % 100;
-            startMinutes += delayMinutes;
-            if (startMinutes % 60 != startMinutes) {
-                startHour++;
-                startMinutes = startMinutes % 60;
-            }
-            return startHour + ":" + startMinutes + ":" + delaySeconds;
-        }
+        float delay = RouteCalculator.getDelay(vehicleTypeId, hour, minute, routeToStation);
+        return interpret(RouteCalculator.getStartingTime(schedule, hour, minute, delay), delay);
     }
 
-    private static int getClosestTime(List<Integer> schedule, int currentTime, int delayMinutes) {
+    public static String interpret(int startingTime, float delay) {
+
+        int delayMinutes = Math.round(delay) / 60; // transform to minutes
+        int delaySeconds = Math.round(delay) % 60; // transform to seconds
+        Log.i(TFLiteUtils.class.getName(), "delayM: " + delayMinutes + " delayS: " + delaySeconds);
+        int startHour = startingTime / 100;
+        int startMinutes = startingTime % 100;
+        startMinutes += delayMinutes;
+        if (startMinutes % 60 != startMinutes) {
+            startHour++;
+            startMinutes = startMinutes % 60;
+        }
+        return startHour + ":" + startMinutes + ":" + delaySeconds;
+    }
+
+    public static float getDelay(List<Integer> routeToStation, float hour, float minute, float temperature, float condition, float dayOfWeek, float month, float vacation, float holiday, float vehicleType) {
+        float delay = 0;
+        int station = routeToStation.get(0);
+        for (int i = 1; i < routeToStation.size(); i++) {
+            delay += doInference(station, routeToStation.get(i), vehicleType, month, dayOfWeek, hour, minute, holiday, vacation, temperature, condition);
+            station = routeToStation.get(i);
+        }
+        return delay;
+    }
+
+
+    public static int getClosestTime(List<Integer> schedule, int currentTime, int delayMinutes) {
         // order ascending
         Collections.sort(schedule, (a, b) -> a > b ? 1 : a < b ? -1 : 0);
         for (Integer integer : schedule) {

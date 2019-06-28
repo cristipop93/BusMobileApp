@@ -28,6 +28,10 @@ public class Arrival {
         this.crowdedLevel = crowdedLevel;
     }
 
+    public Arrival() {
+
+    }
+
     public int getStationId() {
         return stationId;
     }
@@ -98,5 +102,20 @@ public class Arrival {
 
     public void setCrowdedLevel(int crowdedLevel) {
         this.crowdedLevel = crowdedLevel;
+    }
+
+    @Override
+    public String toString() {
+        return "Arrival{" +
+                "stationId=" + stationId +
+                ", busId='" + busId + '\'' +
+                ", vehicleType=" + vehicleType +
+                ", temperature=" + temperature +
+                ", condition=" + condition +
+                ", vacation=" + vacation +
+                ", holiday=" + holiday +
+                ", completeDate=" + completeDate +
+                ", crowdedLevel=" + crowdedLevel +
+                '}';
     }
 }
