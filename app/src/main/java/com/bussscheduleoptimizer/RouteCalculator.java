@@ -61,12 +61,12 @@ public class RouteCalculator {
                                     adapter.addResult(res);
                                     adapter.notifyDataSetChanged();
                                 } else {
-                                    if (!TFLiteUtils.useTestData) {
+//                                    if (!TFLiteUtils.useTestData) {
                                         getLastSeenTime(routeToStation, document.getId(), route.getVehicleTypeId(), getSchedule(stationId, route), inferenceResult, completeRoute, stationId);
-                                    } else {
-                                        // normal flow;
-                                        useNormalFlow(routeToStation, document.getId(), route.getVehicleTypeId(), getSchedule(stationId, route), completeRoute, stationId);
-                                    }
+//                                    } else {
+//                                         normal flow;
+//                                        useNormalFlow(routeToStation, document.getId(), route.getVehicleTypeId(), getSchedule(stationId, route), completeRoute, stationId);
+//                                    }
                                 }
 
 
@@ -112,6 +112,7 @@ public class RouteCalculator {
                     Arrival result = null;
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         Arrival arrival = document.toObject(Arrival.class);
+                        // TODO if routeToStation size is one (this means bus left from the current station) => show arrival of next bus
                         if (routeToStation.contains(arrival.getStationId()) && !routeToStation.get(routeToStation.size()-1).equals(arrival.getStationId())) {
                             result = arrival;
                             break;
@@ -126,7 +127,7 @@ public class RouteCalculator {
                         int newHour = newCalendar.get(Calendar.HOUR_OF_DAY);
                         int newMinute = newCalendar.get(Calendar.MINUTE);
                         int newStartingTime = newHour * 100 + newMinute;
-                        //if newStartingTime + newDelay > currentTime use normal flow (bus left already)
+                        //if newStartingTime + newDelay < currentTime use normal flow (bus left already)
                         newMinute = newMinute + (Math.round(newDelay) / 60);
                         if (newMinute % 60 != newMinute) {
                             newMinute = newMinute % 60;

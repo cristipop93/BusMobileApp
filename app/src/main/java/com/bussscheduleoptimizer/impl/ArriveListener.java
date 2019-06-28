@@ -8,6 +8,7 @@ import android.widget.Toast;
 import com.bussscheduleoptimizer.model.Arrival;
 import com.bussscheduleoptimizer.model.VehicleType;
 import com.bussscheduleoptimizer.utils.FeatureUtils;
+import com.bussscheduleoptimizer.utils.TFLiteUtils;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -41,8 +42,12 @@ public class ArriveListener implements View.OnClickListener {
         float condition = FeatureUtils.getConditions();
         float holiday = FeatureUtils.getHoliday(calendar);
         float vacation = FeatureUtils.getVacation(calendar);
+        if (TFLiteUtils.useTestData) {
+            calendar.set(Calendar.HOUR_OF_DAY, Math.round(TFLiteUtils.s_hour));
+            calendar.set(Calendar.MINUTE, Math.round(TFLiteUtils.s_minute));
+        }
 
-        Arrival arrival = new Arrival(stationId, busId, vehicleType.getIconId(), temperature, condition, vacation, holiday, currentDate, 0);
+        Arrival arrival = new Arrival(stationId, busId, vehicleType.getIconId(), temperature, condition, vacation, holiday, calendar.getTime(), 0);
 
         RateDialog rateDialog = new RateDialog(context, arrival);
         rateDialog.show();
