@@ -113,9 +113,17 @@ public class RouteCalculator {
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         Arrival arrival = document.toObject(Arrival.class);
                         // TODO if routeToStation size is one (this means bus left from the current station) => show arrival of next bus
-                        if (routeToStation.contains(arrival.getStationId()) && !routeToStation.get(routeToStation.size()-1).equals(arrival.getStationId())) {
-                            result = arrival;
-                            break;
+                        if (routeToStation.contains(arrival.getStationId())) {
+                            if (!routeToStation.get(routeToStation.size()-1).equals(arrival.getStationId())) {
+                                result = arrival;
+                                break;
+                            } else {
+                                String inferenceResult = TFLiteUtils.interpret(TFLiteUtils.getNextClosestTime(schedule, startingTime, Math.round(delay) / 60), delay);
+                                Result res = new Result(busId, VehicleType.getById(vehicleTypeId), routeToStation, inferenceResult, completeRoute, stationId);
+                                adapter.addResult(res);
+                                adapter.notifyDataSetChanged();
+                                return;
+                            }
                         }
                     }
                     if (result != null) {

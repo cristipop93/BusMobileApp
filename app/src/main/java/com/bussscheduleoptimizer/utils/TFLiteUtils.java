@@ -126,4 +126,25 @@ public class TFLiteUtils {
     }
 
 
+    public static int getNextClosestTime(List<Integer> schedule, int currentTime, int delayMinutes) {
+        // order ascending
+        Collections.sort(schedule, (a, b) -> a > b ? 1 : a < b ? -1 : 0);
+        int i = 0;
+        for (Integer integer : schedule) {
+            int dHour = integer / 100;
+            int dMinutes = integer % 100 + delayMinutes;
+            if (dMinutes % 60 != dMinutes) {
+                dMinutes = dMinutes % 60;
+                dHour++;
+            }
+            if (dHour * 100 + dMinutes >= currentTime) {
+                if (i == 1) {
+                    return integer;
+                } else {
+                    i++;
+                }
+            }
+        }
+        return 600;
+    }
 }
