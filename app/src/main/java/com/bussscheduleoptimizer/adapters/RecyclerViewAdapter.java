@@ -45,6 +45,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         this.mResults.add(result);
     }
 
+    public void clear() {
+        this.mResults.clear();
+    }
+
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
         Log.d(TAG, "onBindViewHolder: called");

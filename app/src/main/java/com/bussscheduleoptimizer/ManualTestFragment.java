@@ -21,7 +21,11 @@ import com.bussscheduleoptimizer.model.Day;
 import com.bussscheduleoptimizer.model.Month;
 import com.bussscheduleoptimizer.model.PrecipitationType;
 import com.bussscheduleoptimizer.model.VehicleType;
+import com.bussscheduleoptimizer.utils.FeatureUtils;
 import com.bussscheduleoptimizer.utils.TFLiteUtils;
+
+import java.util.Calendar;
+import java.util.Date;
 
 public class ManualTestFragment extends Fragment {
     public static final String TAG = "ManualTestFragment";
@@ -116,6 +120,15 @@ public class ManualTestFragment extends Fragment {
 
     private void setInputValues() {
         if (!TFLiteUtils.useTestData) {
+            // set data available now
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(new Date());
+            month.setSelection(Math.round(FeatureUtils.getMonth(calendar)));
+            day.setSelection(Math.round(FeatureUtils.getDayOfWeek(calendar)) - 1);
+            hour.setText(Math.round(FeatureUtils.getHour(calendar)) + "");
+            minute.setText(Math.round(FeatureUtils.getMinute(calendar)) + "");
+            temperature.setText(Math.round(FeatureUtils.getTemperature()) + "");
+            pType.setSelection(Math.round(FeatureUtils.getConditions()));
             return;
         }
         vehicleType.setSelection((int) TFLiteUtils.s_vehicleType);

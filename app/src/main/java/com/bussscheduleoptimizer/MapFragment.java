@@ -13,6 +13,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +22,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import com.bussscheduleoptimizer.adapters.RecyclerViewAdapter;
+import com.bussscheduleoptimizer.model.Result;
 import com.bussscheduleoptimizer.model.Station;
 import com.bussscheduleoptimizer.utils.LocationUtils;
 import com.bussscheduleoptimizer.utils.ViewWeightAnimationWrapper;
@@ -143,8 +147,17 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
                     .apiKey(getString(R.string.key))
                     .build();
         }
+        RouteCalculator.adapter = initRecyclerView(myView, new ArrayList<>(), this);
 
         return myView;
+    }
+    private static RecyclerViewAdapter initRecyclerView(View view, ArrayList<Result> results, DirectionsCalculator directionsCalculator) {
+        Log.d(TAG, "initRecyclerView: init recyclerView");
+        RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
+        RecyclerViewAdapter adapter = new RecyclerViewAdapter(view.getContext(), results, directionsCalculator);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        return adapter;
     }
 
     public void calculateDirections(List<Integer> completeRoute) {

@@ -68,7 +68,7 @@ public class FeatureUtils {
         if (TFLiteUtils.useTestData) {
             return TFLiteUtils.s_month;
         }
-        return calendar.get(Calendar.MONTH);
+        return calendar.get(Calendar.MONTH) + 1;
     }
 
     public static float getHour(Calendar calendar) {
