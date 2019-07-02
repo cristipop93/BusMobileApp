@@ -59,19 +59,19 @@ public class ArriveListener implements View.OnClickListener {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         // 24
         DocumentReference ref = db.collection("route").document("24");
-        addSchedule1(3, ref);
+        addSchedule1(10, ref);
         DocumentReference ref2 = db.collection("route").document("24");
-        addSchedule2(3, ref2);
+        addSchedule2(10, ref2);
         //48
         DocumentReference ref3 = db.collection("route").document("48");
-        addSchedule1(6, ref3);
+        addSchedule1(15, ref3);
         DocumentReference ref4 = db.collection("route").document("48");
-        addSchedule2(6, ref4);
+        addSchedule2(15, ref4);
         //4
         DocumentReference ref5 = db.collection("route").document("4");
-        addSchedule1(10, ref5);
+        addSchedule1(20, ref5);
         DocumentReference ref6 = db.collection("route").document("4");
-        addSchedule2(10, ref6);
+        addSchedule2(20, ref6);
     }
 
     private void addSchedule1(int time, DocumentReference ref) {

@@ -112,7 +112,7 @@ public class RouteCalculator {
                     Arrival result = null;
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         Arrival arrival = document.toObject(Arrival.class);
-                        // TODO if routeToStation size is one (this means bus left from the current station) => show arrival of next bus
+                        // if routeToStation size is one (this means bus left from the current station) => show arrival of next bus
                         if (routeToStation.contains(arrival.getStationId())) {
                             if (!routeToStation.get(routeToStation.size()-1).equals(arrival.getStationId())) {
                                 result = arrival;

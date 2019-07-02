@@ -123,7 +123,7 @@ public class ManualTestFragment extends Fragment {
             // set data available now
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(new Date());
-            month.setSelection(Math.round(FeatureUtils.getMonth(calendar)));
+            month.setSelection(Math.round(FeatureUtils.getMonth(calendar)) - 1);
             day.setSelection(Math.round(FeatureUtils.getDayOfWeek(calendar)) - 1);
             hour.setText(Math.round(FeatureUtils.getHour(calendar)) + "");
             minute.setText(Math.round(FeatureUtils.getMinute(calendar)) + "");
