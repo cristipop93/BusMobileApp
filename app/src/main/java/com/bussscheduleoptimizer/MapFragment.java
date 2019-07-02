@@ -181,6 +181,12 @@ public class MapFragment extends Fragment implements GoogleMap.OnMarkerClickList
                         startLocation.getLongitude()
                 )
         );
+        com.google.maps.model.LatLng[] wayPoints = new com.google.maps.model.LatLng[completeRoute.size() - 2];
+        for (int i = 1; i< completeRoute.size() - 1; i++) {
+            GeoPoint geoPoint = stations.get(completeRoute.get(i).toString()).getLocation();
+            wayPoints[i-1] = new com.google.maps.model.LatLng(geoPoint.getLatitude(), geoPoint.getLongitude());
+        }
+        directions.waypoints(wayPoints);
         Log.d(TAG, "calculateDirections: destination: " + destination.toString());
         directions.destination(destination).setCallback(new PendingResult.Callback<DirectionsResult>() {
             @Override

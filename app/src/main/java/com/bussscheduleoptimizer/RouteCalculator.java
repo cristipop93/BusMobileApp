@@ -118,7 +118,7 @@ public class RouteCalculator {
                                 result = arrival;
                                 break;
                             } else {
-                                String inferenceResult = TFLiteUtils.interpret(TFLiteUtils.getNextClosestTime(schedule, startingTime, Math.round(delay) / 60), delay);
+                                String inferenceResult = TFLiteUtils.interpret(TFLiteUtils.getNextClosestTime(schedule, (int) (hour * 100 + minute), Math.round(delay) / 60), delay);
                                 Result res = new Result(busId, VehicleType.getById(vehicleTypeId), routeToStation, inferenceResult, completeRoute, stationId);
                                 adapter.addResult(res);
                                 adapter.notifyDataSetChanged();
